@@ -53,7 +53,8 @@ router.post("/register", registerLimiter, ensureServices, async (req, res) => {
             try {
                 const url = new URL(uri)
                 if (url.protocol !== "http:" && url.protocol !== "https:") {
-                    return res.status(400).json({ error: "invalid_redirect_uri", error_description: "Redirect URIs must use http or https" })
+                    console.warn(`[OAuth Rejection] Invalid protocol: uri=${uri}, client_name=${client_name}, ip=${req.ip}, path=${req.path}`)
+                    return res.status(400).json({ error: "invalid_redirect_uri", error_description: "This client isn't in the redirect allow list - raise an issue on GitHub for it to be added" })
                 }
                 // Enforce allowlist if configured
                 const allowlist = (process.env.REDIRECT_URI_ALLOWLIST || "").split(",").map(s => s.trim()).filter(s => s.length > 0)
@@ -66,11 +67,13 @@ router.post("/register", registerLimiter, ensureServices, async (req, res) => {
                         allowed = allowlist.some(allowedUri => uri.startsWith(allowedUri))
                     }
                     if (!allowed) {
-                        return res.status(400).json({ error: "invalid_redirect_uri", error_description: `Redirect URI ${uri} is not in the allowlist` })
+                        console.warn(`[OAuth Rejection] Redirect URI not in allowlist: uri=${uri}, client_name=${client_name}, ip=${req.ip}, path=${req.path}`)
+                        return res.status(400).json({ error: "invalid_redirect_uri", error_description: "This client isn't in the redirect allow list - raise an issue on GitHub for it to be added" })
                     }
                 }
             } catch {
-                return res.status(400).json({ error: "invalid_redirect_uri", error_description: "Invalid redirect_uri format" })
+                console.warn(`[OAuth Rejection] Invalid URI format: uri=${uri}, client_name=${client_name}, ip=${req.ip}, path=${req.path}`)
+                return res.status(400).json({ error: "invalid_redirect_uri", error_description: "This client isn't in the redirect allow list - raise an issue on GitHub for it to be added" })
             }
         }
 
@@ -115,7 +118,8 @@ router.get("/connect", ensureServices, async (req, res) => {
 
     // Validate redirect_uri against registered client
     if (!client.redirectUris.includes(redirect_uri)) {
-        return res.status(400).send("Redirect URI not registered for this client")
+        console.warn(`[OAuth Rejection] Redirect URI not registered for client: uri=${redirect_uri}, client_id=${client_id}, ip=${req.ip}, path=${req.path}`)
+        return res.status(400).json({ error: "invalid_redirect_uri", error_description: "This client isn't in the redirect allow list - raise an issue on GitHub for it to be added" })
     }
 
     if (!code_challenge || !code_challenge_method) {
@@ -163,7 +167,8 @@ router.post("/connect", connectLimiter, ensureServices, async (req, res) => {
         }
 
         if (!redirect_uri || !client.redirectUris.includes(redirect_uri)) {
-            return res.status(400).json({ error: "Invalid redirect_uri" })
+            console.warn(`[OAuth Rejection] Invalid or unregistered redirect URI: uri=${redirect_uri}, client_id=${client_id}, name=${name}, ip=${req.ip}, path=${req.path}`)
+            return res.status(400).json({ error: "invalid_redirect_uri", error_description: "This client isn't in the redirect allow list - raise an issue on GitHub for it to be added" })
         }
 
         // Resolve Team ID if missing

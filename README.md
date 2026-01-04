@@ -183,10 +183,19 @@ The `docker-compose.yml` file contains example values for several environment va
 *   `MASTER_KEY`: Set to `8ddec8ff377e8ea6f88d223594bca495f4e6629ec23719f96b343389475c755f` in `docker-compose.yml` for demonstration. You **must** change this for any real deployment.
     - If you provide exactly 64 hex characters, they are decoded as 32 bytes of key material.
     - Otherwise, the value is treated as a passphrase and hashed with SHA-256 to produce 32 bytes.
-*   `REDIRECT_URI_ALLOWLIST`: Set to `http://localhost:3000/callback`. Update this to match your actual client redirect URIs.
-*   `REDIRECT_URI_ALLOWLIST_MODE`: Set to `exact` (default) or `prefix` for less strict matching.
+*   `REDIRECT_URI_ALLOWLIST`: A comma-separated list of allowed redirect URIs or prefixes. Defaults to including ChatGPT, OpenAI, and local development URIs.
+*   `REDIRECT_URI_ALLOWLIST_MODE`: Set to `exact` (default) or `prefix`. 
+    - **`prefix` (Recommended)**: Allows any URI starting with the allowed string. Essential for services like ChatGPT that use dynamic sub-paths.
+    - **`exact`**: Requires an exact string match.
 *   `CODE_TTL_SECONDS`: Set to `90`.
 *   `TOKEN_TTL_SECONDS`: Set to `3600`.
+
+### Rejection Logging
+For security and maintenance, any rejected redirect URI (one that doesn't match the allowlist) is logged server-side with the requester's IP and provided client information. This allows maintainers to quickly identify and add legitimate new callback domains to the allowlist. 
+
+If your client is rejected, the UI will display:
+> "This client isn't in the redirect allow list - raise an issue on GitHub for it to be added"
+
 
 ## Smoke Test
 
