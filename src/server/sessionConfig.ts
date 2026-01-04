@@ -276,6 +276,11 @@ export function parseSessionConfig(q: Record<string, unknown>): { config?: Sessi
 }
 
 export async function extractSessionConfig(req: Request, res: Response): Promise<SessionConfigInput | undefined> {
+  // If authenticated via user-bound API key, use that config
+  if (req.userConfig) {
+    return req.userConfig as SessionConfigInput
+  }
+
   const q = req.query as Record<string, unknown>
   const { config, error, statusCode } = parseSessionConfig(q)
 

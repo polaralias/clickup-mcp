@@ -66,30 +66,41 @@ Deploying behind Nginx Proxy Manager (NPM) allows you to use HTTPS and custom do
 
 ## Authentication Methods
 
-This server supports two methods of authentication:
+This server supports three methods of authentication:
 
-### 1. Simple API Key (Recommended for Smithery/direct use)
-For simple clients, you can provide an API key via a header or query parameter. The server must be configured with `MCP_API_KEY` or `MCP_API_KEYS`.
+### 1. User-Bound API Keys (Self-Serve)    
+This mode allows users to self-provision API keys bound to their own configuration (e.g., their own ClickUp API Token).
 
+**Configuration:**
+- Set `API_KEY_MODE=user_bound`.
+- Ensure `MASTER_KEY` is set.
+
+**How to use:**
+1.  Navigate to the server root (e.g., `http://localhost:3011/`).
+2.  Enter your configuration (ClickUp API Key, Team ID, etc.).
+3.  Receive a unique MCP API Key.
+4.  Use this key in your client:
+    - **Header**: `Authorization: Bearer <mcp-api-key>`
+    - **Header**: `X-API-Key: <mcp-api-key>`
+
+The server securely encrypts your config and loads it automatically when you use your MCP API Key.
+
+### 2. Simple Global API Key (Legacy)
+For simple single-user setups. Configured via `MCP_API_KEY`.
 - **Header**: `x-api-key: your-mcp-api-key`
 - **Query Param**: `?apiKey=your-mcp-api-key`
 
 > [!NOTE]
-> When using API Key authentication, all write/destructive operations are disabled by default for safety. Use the OAuth flow for full access.
+> Global keys usually have restricted write access by default unless configured otherwise.
 
 **Example (curl):**
 ```bash
-curl "http://localhost:3011/mcp?apiKey=your-mcp-api-key" \
+curl "http://localhost:3011/mcp" \
+  -H "Authorization: Bearer your-mcp-api-key" \
   -H "Accept: application/json, text/event-stream"
 ```
 
-**Example (PowerShell):**
-```powershell
-Invoke-RestMethod -Uri "http://localhost:3011/mcp?apiKey=your-mcp-api-key" `
-  -Headers @{ "Accept" = "application/json, text/event-stream" }
-```
-
-### 2. OAuth-style Bearer Tokens
+### 3. OAuth-style Bearer Tokens
 A standard OAuth 2.0-style flow for creating secure, long-lived sessions. Critical for multi-user environments.
 
 ### How it Works

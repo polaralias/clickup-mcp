@@ -17,10 +17,18 @@ import { runMigrations } from "../infrastructure/db/migrator.js"
 import { createServer } from "./factory.js"
 import { initializeServices } from "./services.js"
 import { getMasterKeyInfo } from "../application/security/masterKey.js"
+import apiKeyRouter from "./api/apiKeyRouter.js"
+import { config } from "./config.js"
 
 async function start() {
   try {
     await runMigrations()
+    if (config.apiKeyMode === "user_bound") {
+      // Validate configuration immediately
+      // This will throw if MASTER_KEY is missing
+      const { validateConfig } = await import("./config.js")
+      validateConfig()
+    }
     initializeServices()
   } catch (e) {
     if (e instanceof Error && e.message.includes("MASTER_KEY")) {
@@ -45,6 +53,9 @@ async function start() {
     app.use(express.json({ limit: "2mb" }))
 
     app.use("/api", apiRouter)
+    if (config.apiKeyMode === "user_bound") {
+      app.use("/api", apiKeyRouter)
+    }
     app.use("/", authRouter)
 
     const __dirname = dirname(fileURLToPath(import.meta.url))

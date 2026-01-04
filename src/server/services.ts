@@ -2,6 +2,8 @@ import { ConnectionRepository } from "../infrastructure/repositories/ConnectionR
 import { SessionRepository } from "../infrastructure/repositories/SessionRepository.js"
 import { AuthCodeRepository } from "../infrastructure/repositories/AuthCodeRepository.js"
 import { ClientRepository } from "../infrastructure/repositories/ClientRepository.js"
+import { UserConfigRepository } from "../infrastructure/repositories/UserConfigRepository.js"
+import { ApiKeyRepository } from "../infrastructure/repositories/ApiKeyRepository.js"
 import { EncryptionService } from "../application/security/EncryptionService.js"
 import { PasswordService } from "../application/security/PasswordService.js"
 import { getMasterKeyBytes } from "../application/security/masterKey.js"
@@ -13,6 +15,8 @@ export let connectionManager: ConnectionManager
 export let sessionManager: SessionManager
 export let authService: AuthService
 export let clientRepository: ClientRepository
+export let userConfigRepository: UserConfigRepository
+export let apiKeyRepository: ApiKeyRepository
 
 export function initializeServices() {
   try {
@@ -22,6 +26,8 @@ export function initializeServices() {
     const sessionRepository = new SessionRepository()
     const authCodeRepository = new AuthCodeRepository()
     clientRepository = new ClientRepository()
+    userConfigRepository = new UserConfigRepository()
+    apiKeyRepository = new ApiKeyRepository()
     connectionManager = new ConnectionManager(connectionRepository, encryptionService)
     sessionManager = new SessionManager(sessionRepository, connectionManager, passwordService)
     authService = new AuthService(authCodeRepository, sessionManager)

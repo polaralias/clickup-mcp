@@ -1,0 +1,26 @@
+export type ConfigFieldType = "text" | "password" | "textarea" | "select" | "checkbox"
+
+export interface ConfigFieldOptions {
+    label: string
+    value: string
+}
+
+export interface ConfigField {
+    name: string
+    type: ConfigFieldType
+    label: string
+    required?: boolean
+    helpText?: string
+    placeholder?: string
+    options?: ConfigFieldOptions[] // For select
+    secret?: boolean // If true, never return value to client after save
+}
+
+export interface ConfigSchema {
+    id: string // Server ID / Service ID
+    name: string
+    description: string
+    fields: ConfigField[]
+    // helper to validate a config object
+    validate: (config: any) => { valid: boolean, error?: string }
+}

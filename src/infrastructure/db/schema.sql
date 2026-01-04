@@ -45,3 +45,31 @@ CREATE INDEX IF NOT EXISTS idx_sessions_token_hash ON sessions(token_hash);
 ALTER TABLE auth_codes ADD COLUMN IF NOT EXISTS code_challenge TEXT;
 ALTER TABLE auth_codes ADD COLUMN IF NOT EXISTS code_challenge_method TEXT;
 ALTER TABLE auth_codes ADD COLUMN IF NOT EXISTS client_id TEXT REFERENCES clients(client_id) ON DELETE CASCADE;
+
+-- User-Bound API Keys
+CREATE TABLE IF NOT EXISTS user_configs (
+  id UUID PRIMARY KEY,
+  server_id TEXT NOT NULL,
+  config_enc TEXT NOT NULL,
+  config_kid TEXT,
+  config_fingerprint TEXT,
+  display_name TEXT,
+  revoked_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS api_keys (
+  id UUID PRIMARY KEY,
+  user_config_id UUID REFERENCES user_configs(id) ON DELETE CASCADE,
+  name TEXT,
+  key_hash TEXT NOT NULL UNIQUE,
+  created_at TIMESTAMP DEFAULT NOW(),
+  last_used_at TIMESTAMP,
+  revoked_at TIMESTAMP,
+  created_ip TEXT,
+  last_used_ip TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_api_keys_key_hash ON api_keys(key_hash);
+CREATE INDEX IF NOT EXISTS idx_user_configs_server_id ON user_configs(server_id);
