@@ -1,18 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connect ClickUp MCP</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
+
 <body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
     <div class="bg-white rounded-lg shadow-lg max-w-lg w-full p-8">
         <h1 class="text-2xl font-bold text-gray-800 mb-2 text-center">ClickUp MCP Server</h1>
         <p class="text-gray-600 text-center mb-6">Configure your connection</p>
 
         <form id="connect-form" class="space-y-4">
-            <!-- Hidden PKCE fields -->
+            <!-- Hidden PKCE and Client fields -->
+            <input type="hidden" id="client_id" name="client_id">
             <input type="hidden" id="redirect_uri" name="redirect_uri">
             <input type="hidden" id="state" name="state">
             <input type="hidden" id="code_challenge" name="code_challenge">
@@ -22,12 +25,16 @@
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Connection Name</label>
-                <input type="text" id="name" name="name" class="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none" placeholder="My Workspace" required>
+                <input type="text" id="name" name="name"
+                    class="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                    placeholder="My Workspace" required>
             </div>
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">API Key</label>
-                <input type="password" id="apiKey" name="apiKey" required class="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none" placeholder="pk_...">
+                <input type="password" id="apiKey" name="apiKey" required
+                    class="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                    placeholder="pk_...">
             </div>
 
             <div class="flex items-center space-x-6 p-2 bg-gray-50 rounded">
@@ -36,7 +43,8 @@
                     <span class="text-sm text-gray-700">Read Only</span>
                 </label>
                 <label class="flex items-center space-x-2 cursor-pointer">
-                    <input type="checkbox" id="selectiveWrite" name="selectiveWrite" class="form-checkbox h-4 w-4 text-blue-600">
+                    <input type="checkbox" id="selectiveWrite" name="selectiveWrite"
+                        class="form-checkbox h-4 w-4 text-blue-600">
                     <span class="text-sm text-gray-700">Selective Write</span>
                 </label>
             </div>
@@ -44,12 +52,16 @@
             <div class="grid grid-cols-1 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Write Spaces (IDs)</label>
-                    <input type="text" id="writeSpaces" name="writeSpaces" class="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none" placeholder="123, 456">
+                    <input type="text" id="writeSpaces" name="writeSpaces"
+                        class="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                        placeholder="123, 456">
                     <p class="text-xs text-gray-500 mt-1">Comma-separated Space IDs</p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Write Lists (IDs)</label>
-                    <input type="text" id="writeLists" name="writeLists" class="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none" placeholder="789, 012">
+                    <input type="text" id="writeLists" name="writeLists"
+                        class="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                        placeholder="789, 012">
                     <p class="text-xs text-gray-500 mt-1">Comma-separated List IDs</p>
                 </div>
             </div>
@@ -57,7 +69,8 @@
             <div id="error-msg" class="text-red-600 text-sm hidden text-center"></div>
 
             <div class="pt-4">
-                <button type="submit" id="submit-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded font-medium transition">
+                <button type="submit" id="submit-btn"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded font-medium transition">
                     Connect
                 </button>
             </div>
@@ -65,4 +78,5 @@
     </div>
     <script src="connect.js"></script>
 </body>
+
 </html>

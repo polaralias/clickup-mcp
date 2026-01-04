@@ -1,9 +1,24 @@
 document.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
-    const fields = ['redirect_uri', 'state', 'code_challenge', 'code_challenge_method'];
+    const fields = ['client_id', 'redirect_uri', 'state', 'code_challenge', 'code_challenge_method'];
+    const err = document.getElementById('error-msg');
+
+    // Check for required OAuth params
+    const required = ['client_id', 'redirect_uri', 'code_challenge', 'code_challenge_method'];
+    const missing = required.filter(f => !params.get(f));
+
+    if (missing.length > 0) {
+        err.innerText = `Missing required parameters: ${missing.join(', ')}`;
+        err.classList.remove('hidden');
+        document.getElementById('submit-btn').disabled = true;
+    }
+
     fields.forEach(f => {
         const val = params.get(f);
-        if (val) document.getElementById(f).value = val;
+        if (val) {
+            const el = document.getElementById(f);
+            if (el) el.value = val;
+        }
     });
 });
 
@@ -22,6 +37,7 @@ document.getElementById('connect-form').addEventListener('submit', async (e) => 
 
     // Transform arrays/booleans
     const payload = {
+        client_id: data.client_id,
         redirect_uri: data.redirect_uri,
         state: data.state,
         code_challenge: data.code_challenge,
