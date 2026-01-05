@@ -47,6 +47,7 @@ function safeCompare(a: string, b: string): boolean {
 
 import { config } from "./config.js"
 import { apiKeyAuth } from "./middleware/apiKeyAuth.js"
+import { unauthorizedJson } from "./oauthDiscovery.js"
 
 export function authenticationMiddleware(req: Request, res: Response, next: NextFunction) {
   // If in user_bound mode, delegate to apiKeyAuth
@@ -116,17 +117,15 @@ export function authenticationMiddleware(req: Request, res: Response, next: Next
         next()
         return
       }
-      res.status(401).json({ error: "Invalid API key" })
-      return
+      return unauthorizedJson(req, res, { error: "Invalid API key" })
     }
 
     // If no MCP_API_KEY/KEYS configured, we don't allow API key access by default
     // as we have nothing to validate against.
-    res.status(401).json({ error: "API key authentication is not configured on this server" })
-    return
+    return unauthorizedJson(req, res, { error: "API key authentication is not configured on this server" })
   }
 
-  res.status(401).json({
+  return unauthorizedJson(req, res, {
     error: "Authentication required. Provide 'Authorization: Bearer <token>' or 'x-api-key: <key>' header or 'apiKey' query parameter."
   })
 }

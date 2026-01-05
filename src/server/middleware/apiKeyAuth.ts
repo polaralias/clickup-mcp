@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express"
 import { createHash } from "crypto"
 import { apiKeyRepository, userConfigRepository, connectionManager } from "../services.js"
 import { config } from "../config.js"
+import { sendOAuthDiscovery401 } from "../oauthDiscovery.js"
 
 // Augment Request type
 declare global {
@@ -25,7 +26,7 @@ export async function apiKeyAuth(req: Request, res: Response, next: NextFunction
     }
 
     if (!key) {
-        return res.status(401).json({ error: "Unauthorized: Missing API Key" })
+        return sendOAuthDiscovery401(req, res, "Unauthorized: Missing API Key")
     }
 
     try {
@@ -40,7 +41,7 @@ export async function apiKeyAuth(req: Request, res: Response, next: NextFunction
                 path: req.path,
                 requester_ip: req.ip
             }))
-            return res.status(401).json({ error: "Unauthorized: Invalid API Key" })
+            return sendOAuthDiscovery401(req, res, "Unauthorized: Invalid API Key")
         }
 
         const userConfig = await userConfigRepository.getById(apiKey.user_config_id)
@@ -53,7 +54,7 @@ export async function apiKeyAuth(req: Request, res: Response, next: NextFunction
                 requester_ip: req.ip,
                 api_key_id: apiKey.id
             }))
-            return res.status(401).json({ error: "Unauthorized: Configuration not found" })
+            return sendOAuthDiscovery401(req, res, "Unauthorized: Configuration not found")
         }
 
         // Decrypt config
@@ -87,6 +88,7 @@ export async function apiKeyAuth(req: Request, res: Response, next: NextFunction
             requester_ip: req.ip,
             error: err instanceof Error ? err.message : "Unknown error"
         }))
-        return res.status(401).json({ error: "Unauthorized: Authentication failed" })
+
+        return sendOAuthDiscovery401(req, res, "Unauthorized: Authentication failed")
     }
 }
