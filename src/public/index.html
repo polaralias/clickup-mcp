@@ -45,7 +45,7 @@ services:
         </div>
 
         <!-- View: Config Entry (User Bound Mode) -->
-        <div id="view-config-entry" class="hidden space-y-6">
+        <div id="view-config-entry" class="space-y-6">
             <div class="text-center mb-6">
                 <h2 class="text-xl font-semibold text-gray-700">Setup Access</h2>
                 <p class="text-gray-600 mt-2">Enter your configuration to receive an API Key.</p>
@@ -83,120 +83,6 @@ services:
                     </ul>
                 </div>
                 <button onclick="resetConfigForm()" class="mt-4 text-sm text-gray-500 underline">Start Over</button>
-            </div>
-        </div>
-
-        <!-- View: Manage Connections (Default) -->
-        <div id="view-dashboard" class="space-y-6">
-            <div class="flex justify-between items-center">
-                <h2 class="text-xl font-semibold text-gray-700">Connections</h2>
-                <button onclick="showCreate()"
-                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition">
-                    New Connection
-                </button>
-            </div>
-            <div id="list-container" class="space-y-4">
-                <!-- Populated by JS -->
-                <p class="text-gray-500 text-center py-4">Loading...</p>
-            </div>
-        </div>
-
-        <!-- View: Create/Edit Connection -->
-        <div id="view-create" class="hidden space-y-6">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-semibold text-gray-700" id="form-title">New Connection</h2>
-                <button onclick="hideCreate()" class="text-gray-500 hover:text-gray-700" id="cancel-btn">
-                    Cancel
-                </button>
-            </div>
-
-            <form id="config-form" onsubmit="handleSave(event)" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Connection Name</label>
-                    <input type="text" id="conn-name"
-                        class="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none"
-                        placeholder="My ClickUp Workspace">
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">API Key</label>
-                        <input type="password" id="conn-apiKey" required
-                            class="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none"
-                            placeholder="pk_...">
-                    </div>
-                </div>
-
-                <div class="flex items-center space-x-6 p-2 bg-gray-50 rounded">
-                    <label class="flex items-center space-x-2 cursor-pointer">
-                        <input type="checkbox" id="conn-readOnly" class="form-checkbox h-4 w-4 text-blue-600">
-                        <span class="text-sm text-gray-700">Read Only</span>
-                    </label>
-                    <label class="flex items-center space-x-2 cursor-pointer">
-                        <input type="checkbox" id="conn-selectiveWrite" class="form-checkbox h-4 w-4 text-blue-600">
-                        <span class="text-sm text-gray-700">Selective Write</span>
-                    </label>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Write Spaces (IDs)</label>
-                        <input type="text" id="conn-writeSpaces"
-                            class="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none"
-                            placeholder="123, 456">
-                        <p class="text-xs text-gray-500 mt-1">Comma-separated Space IDs</p>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Write Lists (IDs)</label>
-                        <input type="text" id="conn-writeLists"
-                            class="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none"
-                            placeholder="789, 012">
-                        <p class="text-xs text-gray-500 mt-1">Comma-separated List IDs</p>
-                    </div>
-                </div>
-
-                <div class="pt-4 flex justify-end">
-                    <button type="submit" id="save-btn"
-                        class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-medium transition w-full md:w-auto">
-                        Connect
-                    </button>
-                </div>
-            </form>
-        </div>
-
-        <!-- View: Connection Details -->
-        <div id="view-detail" class="hidden space-y-6">
-            <div class="flex items-center space-x-4 mb-4">
-                <button onclick="hideDetail()" class="text-gray-500 hover:text-gray-800">&larr; Back</button>
-                <h2 class="text-xl font-semibold text-gray-700">Connection Details</h2>
-            </div>
-
-            <div id="detail-content" class="bg-gray-50 p-4 rounded text-sm text-gray-700 space-y-2"></div>
-
-            <div class="border-t pt-4">
-                <h3 class="text-lg font-medium text-gray-800 mb-2">Connect to Client</h3>
-                <button onclick="createSession()"
-                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded transition">
-                    Generate New Session Token
-                </button>
-
-                <div id="session-output" class="hidden mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded">
-                    <p class="font-bold text-yellow-800 mb-2">Session Token (Copy this):</p>
-                    <div class="relative">
-                        <pre id="token-display" class="bg-white p-3 rounded border text-sm overflow-x-auto"></pre>
-                        <button onclick="copyToken()"
-                            class="absolute top-2 right-2 text-xs bg-gray-200 px-2 py-1 rounded hover:bg-gray-300">Copy</button>
-                    </div>
-                    <p class="text-xs text-gray-600 mt-2">Authorization: Bearer &lt;token&gt;</p>
-                </div>
-            </div>
-
-            <div class="border-t pt-4">
-                <div class="flex justify-between items-center mb-2">
-                    <h3 class="text-lg font-medium text-gray-800">Active Sessions</h3>
-                    <button onclick="loadSessions()" class="text-sm text-blue-600 hover:underline">Refresh</button>
-                </div>
-                <div id="session-list" class="space-y-2"></div>
             </div>
         </div>
     </div>

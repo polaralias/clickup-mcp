@@ -6,6 +6,8 @@ export interface ApiKey {
     user_config_id: string
     key_hash: string
     revoked_at?: Date
+    created_at: Date
+    last_used_at?: Date
 }
 
 export class ApiKeyRepository {

@@ -44,6 +44,24 @@ export async function apiKeyAuth(req: Request, res: Response, next: NextFunction
             return sendOAuthDiscovery401(req, res, "Unauthorized: Invalid API Key")
         }
 
+        // Check for expiration (30 days inactivity)
+        const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000
+        const lastActivity = apiKey.last_used_at || apiKey.created_at
+        const now = new Date()
+
+        if (now.getTime() - lastActivity.getTime() > THIRTY_DAYS_MS) {
+            console.log(JSON.stringify({
+                event: "auth_failure",
+                reason: "key_expired",
+                timestamp: now.toISOString(),
+                path: req.path,
+                requester_ip: req.ip,
+                api_key_id: apiKey.id,
+                last_activity: lastActivity.toISOString()
+            }))
+            return sendOAuthDiscovery401(req, res, "Unauthorized: API Key expired due to 30 days of inactivity")
+        }
+
         const userConfig = await userConfigRepository.getById(apiKey.user_config_id)
         if (!userConfig) {
             console.log(JSON.stringify({
