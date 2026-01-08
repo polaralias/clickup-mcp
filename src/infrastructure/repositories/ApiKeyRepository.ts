@@ -38,4 +38,18 @@ export class ApiKeyRepository {
             [id, ip]
         )
     }
+
+    async listAll(): Promise<(ApiKey & { name?: string, last_used_ip?: string })[]> {
+        const res = await pool.query(
+            `SELECT * FROM api_keys ORDER BY created_at DESC`
+        )
+        return res.rows
+    }
+
+    async revoke(id: string): Promise<void> {
+        await pool.query(
+            `UPDATE api_keys SET revoked_at = NOW() WHERE id = $1`,
+            [id]
+        )
+    }
 }
