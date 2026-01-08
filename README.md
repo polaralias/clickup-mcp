@@ -178,6 +178,9 @@ The server expects standard environment variables for its operation. When runnin
 
 - `MASTER_KEY`: **(Required)** A 64-character hex string or a strong passphrase. This is used to encrypt sensitive ClickUp API keys in the database.
 - `BASE_URL`: **(Required for OAuth)** The public URL where the server is reachable (e.g., `https://clickup.your-domain.com`).
+- `SMITHERY`: **(Optional, default: true)** Controls root path (/) behavior. 
+  - When `true` (default), `/` redirects to the Smithery connection UI.
+  - When `false`, `/` serves the local connection UI (same as `/connect`).
 
 ### Troubleshooting
 
