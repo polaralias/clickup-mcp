@@ -56,6 +56,12 @@ async function start() {
     if (config.apiKeyMode === "user_bound") {
       app.use("/api", apiKeyRouter)
     }
+
+    // Catch-all for API routes to prevent falling through to SPA/HTML
+    app.all("/api/*", (_req, res) => {
+      res.status(404).json({ error: "API endpoint not found" })
+    })
+
     app.use("/", authRouter)
 
     const __dirname = dirname(fileURLToPath(import.meta.url))
