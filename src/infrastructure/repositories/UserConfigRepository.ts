@@ -25,4 +25,9 @@ export class UserConfigRepository {
         const res = await pool.query(`SELECT * FROM user_configs WHERE id = $1`, [id])
         return res.rows[0] || null
     }
+
+    async listAll(): Promise<UserConfig[]> {
+        const res = await pool.query(`SELECT * FROM user_configs ORDER BY created_at DESC`)
+        return res.rows
+    }
 }
