@@ -10,7 +10,7 @@ export interface ConfigField {
     type: ConfigFieldType
     label: string
     required?: boolean
-    helpText?: string
+    description?: string
     placeholder?: string
     options?: ConfigFieldOptions[] // For select
     secret?: boolean // If true, never return value to client after save

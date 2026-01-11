@@ -30,8 +30,7 @@ async function main() {
                 } else {
                     console.table(connections.map(c => ({
                         id: c.id,
-                        name: c.name,
-                        created_at: c.createdAt
+                        name: c.name
                     })))
                 }
             } else if (action === "delete") {
@@ -49,10 +48,7 @@ async function main() {
                 } else {
                     console.table(keys.map(k => ({
                         id: k.id,
-                        name: k.name || "N/A",
-                        revoked: k.revoked_at ? "YES" : "NO",
-                        created_at: k.created_at,
-                        last_used: k.last_used_at || "Never"
+                        created_at: k.created_at
                     })))
                 }
             } else if (action === "revoke") {

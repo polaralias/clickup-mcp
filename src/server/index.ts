@@ -4,6 +4,7 @@ import { fileURLToPath } from "url"
 import { dirname, join } from "path"
 import express from "express"
 import cors from "cors"
+import cookieParser from "cookie-parser"
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 import { createCorsOptions } from "./cors.js"
 import { registerHealthEndpoint } from "./health.js"
@@ -51,6 +52,7 @@ async function start() {
     app.set("trust proxy", true)
     app.use(cors(createCorsOptions()))
     app.use(express.json({ limit: "2mb" }))
+    app.use(cookieParser())
 
     app.use("/api", apiRouter)
     if (config.apiKeyMode === "user_bound") {
@@ -94,9 +96,6 @@ async function start() {
     app.get("/", (_req, res) => {
       serveIndex(_req, res)
     })
-
-    // Dedicated route for local connection UI
-    app.get("/connect", serveIndex)
 
     registerHealthEndpoint(app)
 

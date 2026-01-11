@@ -11,7 +11,7 @@ export const clickupSchema: ConfigSchema = {
             label: "ClickUp API Key",
             required: true,
             placeholder: "pk_...",
-            helpText: "Your personal API key from ClickUp settings.",
+            description: "Your personal API key from ClickUp settings.",
             secret: true
         },
         {
@@ -19,7 +19,7 @@ export const clickupSchema: ConfigSchema = {
             type: "text",
             label: "Team ID (Optional)",
             required: false,
-            helpText: "If not provided, the first available team will be used.",
+            description: "If not provided, the first available team will be used.",
         }
     ],
     validate: (config: any) => {

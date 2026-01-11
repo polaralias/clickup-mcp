@@ -25,12 +25,15 @@ CREATE TABLE IF NOT EXISTS sessions (
 );
 
 CREATE TABLE IF NOT EXISTS auth_codes (
-  code TEXT PRIMARY KEY,
+  code TEXT PRIMARY KEY, -- This will store the hashed authorization code
   connection_id UUID REFERENCES connections(id) ON DELETE CASCADE,
   expires_at TIMESTAMP NOT NULL,
   redirect_uri TEXT,
-  client_id TEXT REFERENCES clients(client_id) ON DELETE CASCADE
+  client_id TEXT REFERENCES clients(client_id) ON DELETE CASCADE,
+  code_challenge TEXT,
+  code_challenge_method TEXT
 );
+
 
 CREATE TABLE IF NOT EXISTS cache (
   key TEXT PRIMARY KEY,
@@ -40,11 +43,6 @@ CREATE TABLE IF NOT EXISTS cache (
 
 CREATE INDEX IF NOT EXISTS idx_cache_expires_at ON cache(expires_at);
 CREATE INDEX IF NOT EXISTS idx_sessions_token_hash ON sessions(token_hash);
-
--- Migrations for PKCE
-ALTER TABLE auth_codes ADD COLUMN IF NOT EXISTS code_challenge TEXT;
-ALTER TABLE auth_codes ADD COLUMN IF NOT EXISTS code_challenge_method TEXT;
-ALTER TABLE auth_codes ADD COLUMN IF NOT EXISTS client_id TEXT REFERENCES clients(client_id) ON DELETE CASCADE;
 
 -- User-Bound API Keys
 CREATE TABLE IF NOT EXISTS user_configs (

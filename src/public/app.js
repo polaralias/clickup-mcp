@@ -1,28 +1,20 @@
 const API_BASE = '/api';
-let currentConnectionId = null;
-
-// Parse query parameters
 const urlParams = new URLSearchParams(window.location.search);
 const redirectUri = urlParams.get('redirect_uri') || urlParams.get('callback_url');
 const state = urlParams.get('state');
 
-// Initialization
 document.addEventListener('DOMContentLoaded', async () => {
-    // Try to load user-bound config schema
     try {
         const res = await fetch(`${API_BASE}/config-schema`);
         if (res.ok) {
             const schema = await res.json();
             renderConfigForm(schema);
+            document.getElementById('view-config-entry').classList.remove('hidden');
+            await fetchConfigStatus();
             return;
         }
-    } catch (e) {
-        console.log("Failed to fetch schema", e);
-    }
-    
-    // In this workflow, we expect user_bound mode.
-    // If it fails, we still show the status banner for troubleshooting.
-    fetchConfigStatus();
+    } catch (e) { console.error('Failed to load config schema', e); }
+    await fetchConfigStatus();
 });
 
 async function fetchConfigStatus() {
@@ -31,124 +23,152 @@ async function fetchConfigStatus() {
     const title = document.getElementById('status-title');
     const message = document.getElementById('status-message');
     const guidance = document.getElementById('status-guidance');
-
     try {
         const res = await fetch(`${API_BASE}/config-status`);
         const data = await res.json();
-
         banner.classList.remove('hidden');
         if (data.status === 'present') {
             banner.className = 'mb-6 p-4 rounded-lg border bg-green-50 border-green-200 text-green-800';
-            icon.innerHTML = '✅';
-            title.innerText = 'Configured';
-            message.innerText = `Master key is present (${data.format}${data.isFallback ? ', using fallback' : ''})`;
-            guidance.classList.add('hidden');
+            icon.innerText = '✅';
+            title.innerText = 'Server is configured';
+            message.innerText = `Encryption key is set (${data.format}).`;
+            guidance.innerText = '';
         } else {
             banner.className = 'mb-6 p-4 rounded-lg border bg-red-50 border-red-200 text-red-800';
-            icon.innerHTML = '❌';
-            title.innerText = 'Server not configured: MASTER_KEY missing';
-            message.innerText = 'Please set the MASTER_KEY environment variable.';
-            guidance.classList.remove('hidden');
+            icon.innerText = '❌';
+            title.innerText = 'Server is not configured';
+            message.innerText = 'The required encryption key is missing. User-bound API keys cannot be issued.';
+            guidance.innerText = 'Set the server encryption key environment variable to enable secure storage and key issuance.';
         }
     } catch (e) {
-        console.error('Failed to fetch config status', e);
+        banner.classList.remove('hidden');
+        banner.className = 'mb-6 p-4 rounded-lg border bg-red-50 border-red-200 text-red-800';
+        icon.innerText = '❌';
+        title.innerText = 'Unable to check server status';
+        message.innerText = 'Could not reach /api/config-status. Is the server running?';
+        guidance.innerText = '';
     }
 }
 
-function copyToken() {
-    const text = document.getElementById('token-display').innerText;
-    navigator.clipboard.writeText(text).then(() => {
-        alert('Copied to clipboard!');
-    });
-}
-
-// --- User Bound API Key Flow ---
-
 function renderConfigForm(schema) {
-    document.getElementById('view-config-entry').classList.remove('hidden');
     const container = document.getElementById('config-fields-container');
-    container.innerHTML = schema.fields.map(field => {
-        const requiredMark = field.required ? '<span class="text-red-500">*</span>' : '';
-        const helpText = field.helpText ? `<p class="text-xs text-gray-500 mt-1">${field.helpText}</p>` : '';
-
-        let inputHtml = '';
+    container.innerHTML = '';
+    schema.fields.forEach(field => {
+        const wrapper = document.createElement('div');
+        const label = document.createElement('label');
+        label.className = 'block text-sm font-medium text-gray-700 mb-1';
+        label.innerText = field.label;
+        wrapper.appendChild(label);
+        let input;
         if (field.type === 'select') {
-            const options = field.options.map(opt => `<option value="${opt.value}">${opt.label}</option>`).join('');
-            inputHtml = `<select name="${field.name}" ${field.required ? 'required' : ''} class="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none">${options}</select>`;
+            input = document.createElement('select');
+            input.className = 'w-full p-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500';
+            (field.options || []).forEach(opt => {
+                const option = document.createElement('option');
+                option.value = opt.value;
+                option.innerText = opt.label;
+                input.appendChild(option);
+            });
         } else if (field.type === 'checkbox') {
-            inputHtml = `
-                <label class="flex items-center space-x-2 cursor-pointer">
-                    <input type="checkbox" name="${field.name}" class="form-checkbox h-4 w-4 text-blue-600">
-                    <span class="text-sm text-gray-700">${field.label}</span>
-                </label>`;
-            return `<div class="p-2 bg-gray-50 rounded">${inputHtml}${helpText}</div>`;
+            const checkboxWrapper = document.createElement('div');
+            checkboxWrapper.className = 'flex items-center bg-gray-50 border border-gray-300 rounded-lg p-2';
+            input = document.createElement('input');
+            input.type = 'checkbox';
+            input.id = field.name;
+            input.className = 'mr-2';
+            const cbLabel = document.createElement('span');
+            cbLabel.className = 'text-sm text-gray-700';
+            cbLabel.innerText = field.description || '';
+            checkboxWrapper.appendChild(input);
+            checkboxWrapper.appendChild(cbLabel);
+            wrapper.appendChild(checkboxWrapper);
+            input.name = field.name;
+            if (field.required) input.required = true;
+            container.appendChild(wrapper);
+            return;
+        } else if (field.type === 'textarea') {
+            input = document.createElement('textarea');
+            input.className = 'w-full p-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500';
+            input.rows = field.rows || 4;
+            input.placeholder = field.placeholder || '';
         } else {
-            const type = field.type === 'password' ? 'password' : 'text';
-            inputHtml = `<input type="${type}" name="${field.name}" ${field.required ? 'required' : ''} class="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none" placeholder="${field.placeholder || ''}">`;
+            input = document.createElement('input');
+            input.type = field.type === 'password' ? 'password' : 'text';
+            input.className = 'w-full p-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500';
+            input.placeholder = field.placeholder || '';
         }
-
-        return `
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">${field.label} ${requiredMark}</label>
-                ${inputHtml}
-                ${helpText}
-            </div>
-        `;
-    }).join('');
+        input.name = field.name;
+        input.id = field.name;
+        if (field.required) input.required = true;
+        if (field.format) input.dataset.format = field.format;
+        wrapper.appendChild(input);
+        if (field.description) {
+            const hint = document.createElement('p');
+            hint.className = 'text-xs text-gray-500 mt-1';
+            hint.innerText = field.description;
+            wrapper.appendChild(hint);
+        }
+        container.appendChild(wrapper);
+    });
+    document.getElementById('user-bound-form').addEventListener('submit', handleIssueKey);
 }
 
-async function handleUserBoundSubmit(event) {
-    event.preventDefault();
+async function handleIssueKey(e) {
+    e.preventDefault();
     const btn = document.getElementById('issue-btn');
     const originalText = btn.innerText;
-    btn.disabled = true;
     btn.innerText = 'Issuing...';
-
-    const form = event.target;
-    // Extract data
-    const formData = {};
-    // Iterate inputs
-    const inputs = form.querySelectorAll('input, select, textarea');
-    inputs.forEach(input => {
-        if (!input.name) return;
-        if (input.type === 'checkbox') {
-            formData[input.name] = input.checked;
+    btn.disabled = true;
+    const form = e.target;
+    const formData = new FormData(form);
+    const payload = {};
+    for (const [k, v] of formData.entries()) {
+        const el = document.getElementById(k);
+        if (el && el.type === 'checkbox') {
+            payload[k] = el.checked;
+        } else if (el && el.dataset && el.dataset.format === 'csv') {
+            payload[k] = String(v).split(',').map(s => s.trim()).filter(Boolean);
         } else {
-            formData[input.name] = input.value;
+            payload[k] = v;
         }
-    });
-
+    }
     try {
         const res = await fetch(`${API_BASE}/api-keys`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData)
+            body: JSON.stringify(payload)
         });
         const data = await res.json();
-
-        if (data.error) throw new Error(data.error);
-
-        // Success
-        document.getElementById('user-bound-form').classList.add('hidden');
-        document.getElementById('api-key-result').classList.remove('hidden');
-        document.getElementById('new-api-key-display').innerText = data.apiKey;
-    } catch (e) {
-        alert(e.message || "Failed to issue key");
-    } finally {
-        btn.disabled = false;
+        if (!res.ok) throw new Error(data.error || 'Failed to issue API key');
+        showApiKeyResult(data.apiKey);
+    } catch (err) { alert(err.message); } finally {
         btn.innerText = originalText;
+        btn.disabled = false;
     }
 }
 
-function copyNewKey() {
-    const text = document.getElementById('new-api-key-display').innerText;
-    navigator.clipboard.writeText(text).then(() => {
-        alert('Copied key to clipboard!');
-    });
+function showApiKeyResult(apiKey) {
+    document.getElementById('view-config-entry').classList.add('hidden');
+    document.getElementById('api-key-result').classList.remove('hidden');
+    const pre = document.getElementById('api-key-value');
+    pre.innerText = apiKey;
+    document.getElementById('copy-btn').onclick = async () => {
+        try {
+            await navigator.clipboard.writeText(apiKey);
+            document.getElementById('copy-btn').innerText = 'Copied!';
+            setTimeout(() => (document.getElementById('copy-btn').innerText = 'Copy'), 1500);
+        } catch (e) { alert('Copy failed'); }
+    };
+    if (redirectUri) {
+        const url = new URL(redirectUri);
+        url.searchParams.set('api_key', apiKey);
+        if (state) url.searchParams.set('state', state);
+        setTimeout(() => { window.location.href = url.toString(); }, 500);
+    }
 }
 
 function resetConfigForm() {
-    document.getElementById('user-bound-form').reset();
-    document.getElementById('user-bound-form').classList.remove('hidden');
     document.getElementById('api-key-result').classList.add('hidden');
+    document.getElementById('view-config-entry').classList.remove('hidden');
+    document.getElementById('user-bound-form').reset();
 }

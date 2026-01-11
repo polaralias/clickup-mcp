@@ -5,6 +5,7 @@ import { config } from "../config.js"
 import { clickupSchema } from "../schemas/clickup.js"
 import { userConfigRepository, apiKeyRepository } from "../services.js"
 import { EncryptionService } from "../../application/security/EncryptionService.js"
+import { getMasterKeyInfo } from "../../application/security/masterKey.js"
 
 const router = Router()
 const encryptionService = new EncryptionService()
@@ -96,6 +97,12 @@ router.post("/api-keys", issuanceLimiter, async (req, res) => {
         console.error("Failed to issue API Key:", err)
         res.status(500).json({ error: "Internal Server Error" })
     }
+})
+
+// GET /api/config-status
+// Returns the status of the master encryption key
+router.get("/config-status", (req, res) => {
+    res.json(getMasterKeyInfo())
 })
 
 export default router
