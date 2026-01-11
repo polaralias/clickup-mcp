@@ -65,6 +65,7 @@ function copyToken() {
 // --- User Bound API Key Flow ---
 
 function renderConfigForm(schema) {
+    document.getElementById('view-config-entry').classList.remove('hidden');
     const container = document.getElementById('config-fields-container');
     container.innerHTML = schema.fields.map(field => {
         const requiredMark = field.required ? '<span class="text-red-500">*</span>' : '';
