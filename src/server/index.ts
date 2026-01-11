@@ -1,4 +1,30 @@
 import "dotenv/config"
+
+// Diagnostic / Fallback for persistent MASTER_KEY missing issue
+if (!process.env.MASTER_KEY) {
+  try {
+    console.warn("MASTER_KEY missing from process.env. Attempting explicit .env load...")
+    const { config } = await import("dotenv")
+    const { join, dirname } = await import("path")
+    const { fileURLToPath } = await import("url")
+
+    // Resolve .env relative to this file (works for both src/server and dist/server)
+    const __filename = fileURLToPath(import.meta.url)
+    const __dirname = dirname(__filename)
+    const rootEnv = join(__dirname, "../../.env")
+
+    config({ path: rootEnv })
+
+    if (process.env.MASTER_KEY) {
+      console.log("Successfully loaded MASTER_KEY from", rootEnv)
+    } else {
+      console.error("Failed to load MASTER_KEY from", rootEnv)
+    }
+  } catch (e) {
+    console.error("Error attempting to load .env:", e)
+  }
+}
+
 import { readFileSync } from "fs"
 import { fileURLToPath } from "url"
 import { dirname, join } from "path"
