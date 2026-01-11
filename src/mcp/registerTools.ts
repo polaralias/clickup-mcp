@@ -665,7 +665,7 @@ export function registerTools(server: McpServer, config: ApplicationConfig, sess
   // Reference
   registerReadOnly(
     "reference_link_list",
-    "List public ClickUp API reference links for Smithery grounding.",
+    "List public ClickUp API reference links.",
     ListReferenceLinksInput,
     async (input) => listReferenceLinks(input),
     readOnlyAnnotation("reference", "doc link list", { scope: "public", input: "limit" })

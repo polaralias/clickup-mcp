@@ -88,7 +88,7 @@ HTTP transport uses the Streamable HTTP class from the MCP SDK and must clean up
 - Use TypeScript across the codebase.
 - Use `PascalCase` for classes and usecase file names, for example `CreateTask.ts`.
 - Use `camelCase` for functions, variables and file local helpers.
-- Use kebab or lower case with dashes for non code files, for example `smithery.yaml`, `Dockerfile`.
+- Use kebab or lower case with dashes for non code files, for example `Dockerfile`.
 - Keep filenames descriptive and aligned with their purpose.
 
 Each file should typically export a small number of well named functions or a single class, not a large grab bag of unrelated utilities.
@@ -110,7 +110,7 @@ Each file should typically export a small number of well named functions or a si
 
 ### 4.3 Configuration usage
 
-- Read environment variables and Smithery config at the outer edges (server setup or factory functions) and pass them into usecases as explicit parameters.
+- Read environment variables at the outer edges (server setup or factory functions) and pass them into usecases as explicit parameters.
 - Do not reach into `process.env` from deep inside business logic if it can be avoided.
 
 ### 4.4 Tests
@@ -145,17 +145,11 @@ For outputs:
 - Use shared truncation helpers from `application/limits` whenever long text fields are being returned.
 - Ensure that concurrency and rate limits for bulk operations are enforced in a central way, for example via a bulk processor service.
 
-## 7. Docker and smithery configuration
+## 7. Docker configuration
 
 The project must include:
 
 - A `Dockerfile` that installs dependencies, builds TypeScript and starts the server in HTTP mode with `TRANSPORT=http`.
-- A `smithery.yaml` that:
-  - Declares `runtime: "container"`
-  - Points at the Dockerfile and build context
-  - Specifies an HTTP start command and optional configuration schema
-
-These files are part of the repository contract and should be kept up to date whenever the server changes in a way that affects build or runtime behaviour.
 
 ## 8. Readability and maintainability
 

@@ -29,7 +29,7 @@ Typical usage patterns:
 2. Make it easy for an AI to reason about workspace structure and find relevant information.
 3. Ensure destructive operations are always explicit, deliberate and reversible where possible.
 4. Keep responses compact and structured so that downstream agents can combine tools without blowing token limits.
-5. Support both Smithery hosted container deployments and local Docker usage from the same codebase.
+5. Support local Docker usage.
 
 ## 4. Non negotiable requirements
 
@@ -53,8 +53,6 @@ Typical usage patterns:
   - Explicit input and output schemas
   - Clear notes on edge cases and constraints
 
-- **Container first design**  
-  The server must run as an HTTP MCP server inside a Docker container with:
   - A `/mcp` endpoint using Streamable HTTP transport
   - CORS configured correctly for browser based MCP clients
   - Port binding controlled by the `PORT` environment variable

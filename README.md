@@ -9,7 +9,7 @@ A Model Context Protocol (MCP) server for the ClickUp API, enabling AI agents to
 - **Time Tracking**: Log time entries and view reports.
 - **Selective Permissions**: Configure read-only access or whitelist specific Spaces/Lists.
 - **Secure Authentication**: Supports both OAuth-style Bearer tokens and simple API Key authentication (`x-api-key` header or `?apiKey=` query param).
-- **Deployment Options**: Run locally via Docker, deploy to Cloudflare Workers, or use Smithery.
+- **Deployment Options**: Run locally via Docker or deploy to Cloudflare Workers.
 
 ## Quick Start (Local Docker)
 
@@ -164,13 +164,6 @@ A full smoke test script is available at `scripts/dcr-smoke-test.ps1`.
 
 See `wrangler.jsonc` for configuration details.
 
-## Deployment with Smithery
-
-To run the ClickUp MCP server using [Smithery](https://smithery.ai):
-
-```bash
-npx -y @smithery/cli run clickup-mcp --config "{\"teamId\":\"123456\",\"apiKey\":\"pk_...\"}"
-```
 
 ## Configuration
 
@@ -178,9 +171,6 @@ The server expects standard environment variables for its operation. When runnin
 
 - `MASTER_KEY`: **(Required)** A 64-character hex string or a strong passphrase. This is used to encrypt sensitive ClickUp API keys in the database.
 - `BASE_URL`: **(Required for OAuth)** The public URL where the server is reachable (e.g., `https://clickup.your-domain.com`).
-- `SMITHERY`: **(Optional, default: true)** Controls root path (/) behavior. 
-  - When `true` (default), `/` redirects to the Smithery connection UI.
-  - When `false`, `/` serves the local connection UI (same as `/connect`).
 
 ### Troubleshooting
 

@@ -1,6 +1,6 @@
 # MCP resource taxonomy for ClickUp
 
-This taxonomy groups tools and resources by ClickUp concepts so Smithery and LLM agents can pick the right action quickly.
+This taxonomy groups tools and resources by ClickUp concepts so LLM agents can pick the right action quickly.
 
 ## Naming convention
 

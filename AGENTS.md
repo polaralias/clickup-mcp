@@ -18,7 +18,7 @@ Read these first:
   How ClickUp is structured, key concepts, and the main workflows this server should support.
 
 - [03_operational_and_safety_constraints](./docs/03_operational_and_safety_constraints.md)  
-  Deployment model, container and Smithery requirements, configuration, safety and limits.
+  Deployment model, container requirements, configuration, safety and limits.
 
 - [04_codebase_architecture_and_house_style](./docs/04_codebase_architecture_and_house_style.md)  
   Expected project layout, layering, naming conventions and general coding style.
@@ -29,7 +29,7 @@ Treat these files as authoritative when making design decisions or resolving amb
 
 If you need to reconstruct or significantly modify the server, use a prompt similar to this:
 
-> You are rebuilding a ClickUp MCP Server that exposes high quality, agent friendly tools over HTTP, containerised for Smithery and usable locally via Docker.
+> You are rebuilding a ClickUp MCP Server that exposes high quality, agent friendly tools over HTTP, usable locally via Docker.
 >
 > 1. Read and internalise:
 >    - `01_product_brief_and_goals.md`
@@ -39,7 +39,7 @@ If you need to reconstruct or significantly modify the server, use a prompt simi
 > 2. Recreate a TypeScript codebase that:
 >    - Implements the layered architecture described in the architecture doc: MCP tools layer, application usecases, infrastructure gateways.
 >    - Exposes an MCP compatible `/mcp` HTTP endpoint with Streamable HTTP transport, correct CORS, and binding to the `PORT` environment variable.
->    - Includes a `Dockerfile` and `smithery.yaml` suitable for `runtime: "container"` deployment, and works with local Docker runs.
+>    - Includes a `Dockerfile` suitable for Docker deployment.
 >    - Provides tools for ClickUp hierarchy navigation, task lifecycle, fuzzy and structured search, docs search and editing, and time tracking and reporting, matching the domain and workflow expectations.
 >    - Applies the safety patterns from the constraints doc, including explicit confirmation and optional dry runs for destructive operations, attachment limits and token budgeting with truncation flags.
 > 3. Follow the house style for file layout, naming and coding practices. Do not add comments unless strictly necessary. Prefer compact, structured tool responses that are easy for agents to chain.

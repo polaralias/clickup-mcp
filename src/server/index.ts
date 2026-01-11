@@ -84,21 +84,13 @@ async function start() {
       res.status(404).send("index.html not found")
     }
 
-    const smitheryRedirect = (_req: express.Request, res: express.Response) => {
-      res.redirect("https://smithery.ai/mcp/@polaralias/clickup-mcp")
-    }
-
-    // Explicitly serve index.html on root, or redirect to Smithery if configured
-    app.get("/", (req, res) => {
-      if (process.env.SMITHERY !== "false") {
-        return smitheryRedirect(req, res)
-      }
-      serveIndex(req, res)
+    // Explicitly serve index.html on root
+    app.get("/", (_req, res) => {
+      serveIndex(_req, res)
     })
 
-    // Dedicated routes for local connection UI and Smithery redirect
+    // Dedicated route for local connection UI
     app.get("/connect", serveIndex)
-    app.get("/smithery", smitheryRedirect)
 
     registerHealthEndpoint(app)
 

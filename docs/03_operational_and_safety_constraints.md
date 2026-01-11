@@ -4,28 +4,6 @@ This document describes how the ClickUp MCP Server must behave in deployment, ho
 
 ## 1. Deployment environments
 
-### 1.1 Smithery container runtime
-
-The primary deployment target is Smithery using the `runtime: "container"` mode.
-
-Requirements:
-
-- The repository includes:
-  - `smithery.yaml` describing build and start commands
-  - `Dockerfile` that builds a production image
-
-- The container:
-  - Starts an HTTP server that listens on the port given by the `PORT` environment variable
-  - Exposes an MCP compatible `/mcp` endpoint using Streamable HTTP transport
-  - Sets appropriate CORS headers for browser based MCP clients
-
-At deployment time Smithery will:
-
-1. Clone the repository from GitHub
-2. Build the Docker image using the specified Dockerfile and build context
-3. Run the container with `PORT` set to `8081`
-4. Probe the `/mcp` endpoint by sending `initialize` and `list_tools` to discover tools
-
 The server must work with this flow without additional manual configuration.
 
 ### 1.2 Local Docker usage
@@ -41,7 +19,7 @@ Expectations:
 
 - The HTTP server binds to `PORT`
 - `/mcp` and `/healthz` endpoints are available
-- The container works with MCP aware clients on `localhost`, including Smithery CLI playground
+- The container works with MCP aware clients on `localhost`.
 
 ### 1.3 STDIO compatibility (optional but desirable)
 
@@ -104,22 +82,11 @@ Typical expected variables:
 
 Exact names can be adjusted, but the behaviour must respect these ideas.
 
-### 3.2 Smithery configuration
-
-`smithery.yaml` should provide an optional configuration schema for session specific settings, for example:
-
-- Workspace or team ID
-- ClickUp API token
-- Character budget
-- Attachment size limit
-
-These values are parsed from incoming HTTP requests using the Smithery SDK helper and made available to application code.
 
 ### 3.3 Precedence and behaviour
 
 - Global behaviour such as timeouts and hard limits derive from environment variables.
 - Session configuration can override some defaults on a per session basis.
-- Secrets such as `CLICKUP_API_TOKEN` are supplied through session configuration or environment variables and must always be handled via secure channels.
 
 ## 4. Safety constraints and patterns
 
@@ -205,11 +172,7 @@ Logs do not need to be richly structured for the initial implementation, but the
 
 When this server is rebuilt, it should satisfy the following operational checklist:
 
-- Runs as a container in Smithery, using `PORT` and `/mcp` with CORS.
-- Can be run locally using Docker with the same image.
-- Provides optional STDIO mode for compatibility, without affecting the container design.
 - Uses environment variables for secrets and global limits.
-- Uses Smithery configuration for session specific settings.
 - Applies consistent safety patterns for destructive actions, attachments and large outputs.
 - Handles errors and rate limits gracefully and transparently.
 
