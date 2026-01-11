@@ -54,6 +54,8 @@ async function start() {
     app.use(express.json({ limit: "2mb" }))
     app.use(cookieParser())
 
+    registerHttpTransport(app, createServer)
+
     app.use("/api", apiRouter)
     if (config.apiKeyMode === "user_bound") {
       app.use("/api", apiKeyRouter)
@@ -120,14 +122,30 @@ async function start() {
       }
       const baseUrl = getBaseUrl(req)
       res.json({
-        resource: baseUrl,
+        resource: `${baseUrl}/mcp`,
         authorization_servers: [baseUrl],
         bearer_methods_supported: ["header"],
         resource_documentation: `${baseUrl}/`
       })
     })
 
-    app.get("/.well-known/oauth-authorization-server", (req, res) => {
+    app.get(["/.well-known/mcp-config", "/.well-known/mcp-configuration"], (_req, res) => {
+      res.json(sessionConfigJsonSchema)
+    })
+
+    app.get("/.well-known/mcp-server", (req, res) => {
+      const baseUrl = getBaseUrl(req)
+      res.json({
+        mcp_endpoint: `${baseUrl}/mcp`,
+        version: "1.0.0",
+        capabilities: {
+          authentication: ["api_key", "oauth2"],
+          transports: ["sse"]
+        }
+      })
+    })
+
+    app.get(["/.well-known/oauth-authorization-server", "/.well-known/openid-configuration"], (req, res) => {
       const baseUrl = getBaseUrl(req)
       res.json({
         issuer: baseUrl,
@@ -140,11 +158,6 @@ async function start() {
         token_endpoint_auth_methods_supported: ["none"]
       })
     })
-
-    app.get("/.well-known/mcp-config", (_req, res) => {
-      res.json(sessionConfigJsonSchema)
-    })
-    registerHttpTransport(app, createServer)
     const port = Number(process.env.PORT ?? 3000)
     app.listen(port)
   } else {

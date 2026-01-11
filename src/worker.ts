@@ -29,36 +29,36 @@ class WorkerSSETransport implements Transport {
 
   async send(message: JSONRPCMessage): Promise<void> {
     try {
-        const messageId = (message as { id?: string | number }).id;
-        if (messageId !== undefined) {
-          const resolver = this.pendingResponses.get(messageId);
-          if (resolver) {
-            this.pendingResponses.delete(messageId);
-            resolver(message);
-            return;
-          }
+      const messageId = (message as { id?: string | number }).id;
+      if (messageId !== undefined) {
+        const resolver = this.pendingResponses.get(messageId);
+        if (resolver) {
+          this.pendingResponses.delete(messageId);
+          resolver(message);
+          return;
         }
-        const event = `event: message\ndata: ${JSON.stringify(message)}\n\n`;
-        await this.writer.write(new TextEncoder().encode(event));
+      }
+      const event = `event: message\ndata: ${JSON.stringify(message)}\n\n`;
+      await this.writer.write(new TextEncoder().encode(event));
     } catch (e) {
-        console.error("Error writing to stream", e);
-        this.onerror?.(e as Error);
+      console.error("Error writing to stream", e);
+      this.onerror?.(e as Error);
     }
   }
 
   async close(): Promise<void> {
     try {
-        await this.writer.close();
+      await this.writer.close();
     } catch (e) {
-        // Ignore
+      // Ignore
     }
     this.onclose?.();
   }
 
   handlePostMessage(message: JSONRPCMessage) {
-      if (this.onmessage) {
-        this.onmessage(message);
-      }
+    if (this.onmessage) {
+      this.onmessage(message);
+    }
   }
 }
 
@@ -123,15 +123,15 @@ export class McpSession implements DurableObject {
     const url = new URL(request.url);
     const queryObj: Record<string, any> = {};
     for (const [key, value] of url.searchParams) {
-        // Simplified query parsing
-        queryObj[key] = value;
+      // Simplified query parsing
+      queryObj[key] = value;
     }
 
     const storedConfig = await this.loadStoredConfig();
     const configInput = storedConfig ?? queryObj;
 
     if (!configInput) {
-        return new Response(JSON.stringify({ error: "Invalid config" }), { status: 400 });
+      return new Response(JSON.stringify({ error: "Invalid config" }), { status: 400 });
     }
 
     const sessionExisted = Boolean(this.server && this.transport);
@@ -172,16 +172,16 @@ export class McpSession implements DurableObject {
 
     // Handle client disconnect
     request.signal.addEventListener("abort", () => {
-        this.transport?.close();
-        this.server?.close();
+      this.transport?.close();
+      this.server?.close();
     });
 
     return new Response(readable, {
-        headers: {
-            "Content-Type": "text/event-stream",
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive"
-        }
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive"
+      }
     });
   }
 
@@ -268,11 +268,56 @@ export default {
     const url = new URL(request.url);
 
     // Serve schema config
-    if (url.pathname === "/" || url.pathname === "/.well-known/mcp-config") {
-         const { sessionConfigJsonSchema } = await import("./server/sessionConfig.js");
-         return new Response(JSON.stringify(sessionConfigJsonSchema, null, 2), {
-             headers: { "Content-Type": "application/json" }
-         });
+    if (url.pathname === "/" || url.pathname === "/.well-known/mcp-config" || url.pathname === "/.well-known/mcp-configuration") {
+      const { sessionConfigJsonSchema } = await import("./server/sessionConfig.js");
+      return new Response(JSON.stringify(sessionConfigJsonSchema, null, 2), {
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
+    // MCP Server Metadata
+    if (url.pathname === "/.well-known/mcp-server") {
+      const baseUrl = `${url.protocol}//${url.host}`;
+      return new Response(JSON.stringify({
+        mcp_endpoint: `${baseUrl}/mcp`,
+        version: "1.0.0",
+        capabilities: {
+          authentication: ["api_key", "oauth2"],
+          transports: ["sse"]
+        }
+      }, null, 2), {
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
+    // OAuth Discovery
+    if (url.pathname === "/.well-known/oauth-authorization-server" || url.pathname === "/.well-known/openid-configuration") {
+      const baseUrl = `${url.protocol}//${url.host}`;
+      return new Response(JSON.stringify({
+        issuer: baseUrl,
+        authorization_endpoint: `${baseUrl}/connect`,
+        token_endpoint: `${baseUrl}/token`,
+        registration_endpoint: `${baseUrl}/register`,
+        response_types_supported: ["code"],
+        grant_types_supported: ["authorization_code"],
+        code_challenge_methods_supported: ["S256"],
+        token_endpoint_auth_methods_supported: ["none"]
+      }, null, 2), {
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
+    // OAuth Protected Resource
+    if (url.pathname === "/.well-known/oauth-protected-resource") {
+      const baseUrl = `${url.protocol}//${url.host}`;
+      return new Response(JSON.stringify({
+        resource: `${baseUrl}/mcp`,
+        authorization_servers: [baseUrl],
+        bearer_methods_supported: ["header"],
+        resource_documentation: `${baseUrl}/`
+      }, null, 2), {
+        headers: { "Content-Type": "application/json" }
+      });
     }
 
     if (url.pathname === "/mcp") {

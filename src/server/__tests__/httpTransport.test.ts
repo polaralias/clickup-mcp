@@ -3,6 +3,7 @@ import type { Request, Response, NextFunction, Express } from "express"
 import { registerHttpTransport } from "../httpTransport.js"
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 import type { ApplicationConfig } from "../../application/config/applicationConfig.js"
+import { config } from "../config.js"
 
 type TransportInstance = {
   sessionId?: string
@@ -46,6 +47,9 @@ type MutableRequest = Request & { sessionCredential?: { token: string } }
 describe("registerHttpTransport", () => {
   beforeEach(() => {
     transportInstances.length = 0
+    process.env.MCP_API_KEY = "token-123"
+    process.env.MCP_API_KEYS = "pk_456"
+      ; (config as any).apiKeyMode = "global"
   })
 
   it("reuses an existing session when the request lacks authorization but includes the session id", async () => {
@@ -67,7 +71,8 @@ describe("registerHttpTransport", () => {
     registerHttpTransport(app, createServer)
 
     expect(app.all).toHaveBeenCalled()
-    expect(handlers).toHaveLength(2)
+    // 2 handlers for /mcp and 1 for /
+    expect(handlers).toHaveLength(3)
 
     const [authMiddleware, routeHandler] = handlers
 
@@ -77,7 +82,9 @@ describe("registerHttpTransport", () => {
         accept: "application/json"
       },
       query: { teamId: "team_1", apiKey: "token-123" },
-      body: {}
+      body: {},
+      protocol: "http",
+      get: (name: string) => name === "host" ? "localhost" : undefined
     } as unknown as MutableRequest
     const initialRes = createResponse()
     const next = vi.fn()
@@ -96,7 +103,9 @@ describe("registerHttpTransport", () => {
       headers: {
         "mcp-session-id": sessionId,
         accept: "application/json"
-      }
+      },
+      protocol: "http",
+      get: (name: string) => name === "host" ? "localhost" : undefined
     } as unknown as MutableRequest
     const followupRes = createResponse()
     const followupNext = vi.fn()
@@ -136,7 +145,9 @@ describe("registerHttpTransport", () => {
         accept: "application/json"
       },
       query: { teamId: "team_1", apiKey: "pk_456" },
-      body: {}
+      body: {},
+      protocol: "http",
+      get: (name: string) => name === "host" ? "localhost" : undefined
     } as unknown as MutableRequest
     const initialRes = createResponse()
     const next = vi.fn()

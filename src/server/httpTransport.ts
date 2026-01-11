@@ -158,7 +158,7 @@ export function registerHttpTransport(
     }
   }
 
-  app.all("/mcp", authenticationMiddleware, async (req: Request, res: Response) => {
+  const mcpHandler = async (req: Request, res: Response) => {
     // Normalize Accept header to meet StreamableHTTP transport requirements
     // The transport requires both application/json and text/event-stream to be literally present
     // Even though */* should cover everything, the SDK checks for explicit strings
@@ -184,5 +184,18 @@ export function registerHttpTransport(
       }
       session.transport.close().catch(() => undefined)
     }
+  }
+
+  app.all("/mcp", authenticationMiddleware, mcpHandler)
+
+  // Also handle root for clients that only have the base URL
+  // We only intercept if it looks like an SSE request (Accept header includes text/event-stream)
+  // or if it's a POST request (which index.html doesn't handle)
+  app.all("/", (req, res, next) => {
+    const accept = req.headers.accept || ""
+    if (accept.includes("text/event-stream") || req.method === "POST") {
+      return authenticationMiddleware(req, res, () => mcpHandler(req, res))
+    }
+    next()
   })
 }

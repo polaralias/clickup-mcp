@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { AuthService } from '../../application/services/AuthService.js'
+import { createHash } from 'node:crypto'
 
 describe('AuthService', () => {
     let authService: AuthService
@@ -22,10 +23,11 @@ describe('AuthService', () => {
         const connectionId = 'conn-1'
         const redirectUri = 'http://example.com/cb'
         const code = await authService.generateCode(connectionId, redirectUri)
+        const codeHash = createHash('sha256').update(code).digest('hex')
 
         expect(code).toBeTruthy()
         expect(mockAuthCodeRepo.create).toHaveBeenCalledWith(expect.objectContaining({
-            code,
+            code: codeHash,
             connectionId,
             redirectUri
         }))
@@ -33,11 +35,12 @@ describe('AuthService', () => {
 
     it('should exchange code successfully with matching redirectUri', async () => {
         const code = 'valid-code'
+        const codeHash = createHash('sha256').update(code).digest('hex')
         const redirectUri = 'http://example.com/cb'
         const connectionId = 'conn-1'
 
         mockAuthCodeRepo.get.mockResolvedValue({
-            code,
+            code: codeHash,
             connectionId,
             expiresAt: new Date(Date.now() + 10000),
             redirectUri
@@ -47,7 +50,7 @@ describe('AuthService', () => {
         const token = await authService.exchangeCode(code, redirectUri)
 
         expect(token).toBe('token-123')
-        expect(mockAuthCodeRepo.delete).toHaveBeenCalledWith(code)
+        expect(mockAuthCodeRepo.delete).toHaveBeenCalledWith(codeHash)
     })
 
     it('should fail exchange if code not found', async () => {
