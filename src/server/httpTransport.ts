@@ -11,6 +11,7 @@ import { sessionManager } from "./api/router.js"
 import { PostgresSessionCache } from "../infrastructure/services/PostgresSessionCache.js"
 import { CacheRepository } from "../infrastructure/repositories/CacheRepository.js"
 import { resolveTeamIdFromApiKey } from "./teamResolution.js"
+import { isMasterKeyConfigured } from "../application/security/masterKey.js"
 
 type Session = {
   server: McpServer
@@ -42,7 +43,7 @@ export function registerHttpTransport(
   function createSession(configInput: SessionConfigInput, credential: SessionCredential, forcedSessionId?: string) {
     const config = createApplicationConfig(configInput, credential.token)
     let sessionCache: SessionCache
-    if (process.env.MASTER_KEY) {
+    if (isMasterKeyConfigured()) {
       sessionCache = new PostgresSessionCache(new CacheRepository(), config.hierarchyCacheTtlMs, config.spaceConfigCacheTtlMs)
     } else {
       sessionCache = new SessionCache(config.hierarchyCacheTtlMs, config.spaceConfigCacheTtlMs)

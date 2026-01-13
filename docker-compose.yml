@@ -6,6 +6,8 @@ services:
       context: .
       dockerfile: Dockerfile
     image: clickup-mcp:latest
+    env_file:
+      - .env
     environment:
       NODE_ENV: production
       PORT: "3000"

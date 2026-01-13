@@ -63,3 +63,12 @@ export function getMasterKeyInfo() {
         checksum: createHash("sha256").update(bytes).digest("hex").substring(0, 8)
     }
 }
+
+/**
+ * Returns true if a master key is configured (either MASTER_KEY or MCP_MASTER_KEY fallback).
+ * Values that are only whitespace are treated as missing.
+ */
+export function isMasterKeyConfigured(): boolean {
+    const value = (process.env.MASTER_KEY || "").trim() || (process.env.MCP_MASTER_KEY || "").trim()
+    return !!value
+}
