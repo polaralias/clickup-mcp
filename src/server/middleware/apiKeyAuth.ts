@@ -95,7 +95,7 @@ export async function apiKeyAuth(req: Request, res: Response, next: NextFunction
         req.apiKeyId = apiKey.id
 
         // Async record usage (don't await)
-        apiKeyRepository.recordUsage(apiKey.id, req.ip).catch(console.error)
+        void apiKeyRepository.recordUsage(apiKey.id, req.ip)
 
         next()
     } catch (err) {

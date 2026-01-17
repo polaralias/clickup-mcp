@@ -46,8 +46,36 @@ import { initializeServices } from "./services.js"
 import { getMasterKeyInfo } from "../application/security/masterKey.js"
 import apiKeyRouter from "./api/apiKeyRouter.js"
 import { config } from "./config.js"
+import { requestLogger } from "./middleware/requestLogger.js"
+import { errorHandler } from "./middleware/errorHandler.js"
+import { getMetrics } from "../infrastructure/metrics/metrics.js"
+
+function validateSecurityConfig() {
+  const masterKey = process.env.MASTER_KEY?.trim()
+  if (!masterKey) {
+    return
+  }
+
+  const insecurePatterns = [
+    /^0+$/,
+    /^test/i,
+    /^example/i,
+    /^changeme/i,
+    /^your[-_]?key/i
+  ]
+
+  if (insecurePatterns.some((pattern) => pattern.test(masterKey))) {
+    console.error("WARNING: MASTER_KEY appears to be a test/example value.")
+    console.error("Generate a secure key with: openssl rand -hex 32")
+    if (process.env.NODE_ENV === "production") {
+      console.error("Refusing to start in production with insecure MASTER_KEY.")
+      process.exit(1)
+    }
+  }
+}
 
 async function start() {
+  validateSecurityConfig()
   try {
     await runMigrations()
     if (config.apiKeyMode === "user_bound") {
@@ -76,9 +104,21 @@ async function start() {
   if (transport === "http") {
     const app = express()
     app.set("trust proxy", true)
+    app.use((req, res, next) => {
+      const forwardedProto = req.headers["x-forwarded-proto"]
+      const isHttps =
+        req.secure ||
+        (typeof forwardedProto === "string" &&
+          forwardedProto.split(",")[0]?.trim() === "https")
+      if (isHttps) {
+        res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+      }
+      next()
+    })
     app.use(cors(createCorsOptions()))
     app.use(express.json({ limit: "2mb" }))
     app.use(cookieParser())
+    app.use(requestLogger)
 
     registerHttpTransport(app, createServer)
 
@@ -126,6 +166,10 @@ async function start() {
     })
 
     registerHealthEndpoint(app)
+
+    app.get("/metrics", (_req, res) => {
+      res.json(getMetrics())
+    })
 
     app.get("/api/config-status", (_req, res) => {
       res.json(getMasterKeyInfo())
@@ -184,8 +228,12 @@ async function start() {
         token_endpoint_auth_methods_supported: ["none"]
       })
     })
+
+    app.use(errorHandler)
     const port = Number(process.env.PORT ?? 3000)
-    app.listen(port)
+    app.listen(port, () => {
+      console.log(`ClickUp MCP Server listening on port ${port}`)
+    })
   } else {
     await startStdioTransport(createServer, (config) =>
       new SessionCache(config.hierarchyCacheTtlMs, config.spaceConfigCacheTtlMs)

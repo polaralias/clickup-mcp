@@ -12,7 +12,9 @@ services:
       NODE_ENV: production
       PORT: "3000"
       TRANSPORT: "http"
-      MASTER_KEY: ${MASTER_KEY:-0000000000000000000000000000000000000000000000000000000000000000}
+      MASTER_KEY: ${MASTER_KEY:?MASTER_KEY environment variable is required. Generate with: openssl rand -hex 32}
+      # API_KEY_MODE: Set to "user_bound" to enable self-service API key provisioning
+      # Default in code is "disabled" but we enable it here for the Docker demo
       API_KEY_MODE: ${API_KEY_MODE:-user_bound}
       REDIRECT_URI_ALLOWLIST: ${REDIRECT_URI_ALLOWLIST:-https://chatgpt.com/,https://chat.openai.com/,https://clickup-mcp.polaralias.com/,http://localhost:3000/callback,http://localhost:3011/callback}
       REDIRECT_URI_ALLOWLIST_MODE: ${REDIRECT_URI_ALLOWLIST_MODE:-prefix}

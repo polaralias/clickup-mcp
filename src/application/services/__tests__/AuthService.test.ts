@@ -33,6 +33,12 @@ describe('AuthService', () => {
     }))
   })
 
+  it('generates a 32-character hex code', async () => {
+    const code = await authService.generateCode('conn-1')
+    expect(code).toHaveLength(32)
+    expect(/^[0-9a-f]+$/.test(code)).toBe(true)
+  })
+
   it('exchanges a valid code for a token', async () => {
     const code = 'valid-code'
     const codeHash = createHash('sha256').update(code).digest('hex')

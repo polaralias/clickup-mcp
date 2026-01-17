@@ -2,7 +2,7 @@ import { createCipheriv, createDecipheriv, randomBytes } from "crypto"
 import { getMasterKeyBytes } from "./masterKey.js"
 
 const ALGORITHM = "aes-256-gcm"
-const IV_LENGTH = 16
+const IV_LENGTH = 12 // NIST recommended for GCM
 
 export class EncryptionService {
   private key: Buffer

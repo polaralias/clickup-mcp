@@ -7,6 +7,9 @@ export const config = {
     isDev: process.env.NODE_ENV === "development",
 
     // Auth & Security
+    // API Key Mode: "disabled" | "global" | "user_bound"
+    // Default: "disabled" - requires explicit opt-in for API key authentication
+    // Note: docker-compose.yml defaults to "user_bound" for demo purposes
     apiKeyMode: (process.env.API_KEY_MODE ?? "disabled") as "disabled" | "global" | "user_bound",
     masterKey: process.env.MASTER_KEY, // Raw value, use getMasterKeyBytes() for crypto operations
 

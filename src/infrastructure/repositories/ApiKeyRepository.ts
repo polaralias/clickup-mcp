@@ -31,12 +31,30 @@ export class ApiKeyRepository {
     }
 
     async recordUsage(id: string, ip?: string) {
-        // Write-throttling could be implemented here or in the caller
-        // For now, simple update
-        await pool.query(
-            `UPDATE api_keys SET last_used_at = NOW(), last_used_ip = $2 WHERE id = $1`,
-            [id, ip]
-        )
+        try {
+            await pool.query(
+                `UPDATE api_keys SET last_used_at = NOW(), last_used_ip = $2 WHERE id = $1`,
+                [id, ip]
+            )
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : String(err)
+            try {
+                await pool.query(
+                    `INSERT INTO api_key_usage_failures (id, api_key_id, last_used_ip, error)
+           VALUES ($1, $2, $3, $4)`,
+                    [randomUUID(), id, ip, errorMessage]
+                )
+            } catch (insertErr) {
+                console.error(JSON.stringify({
+                    event: "api_key_usage_record_failed",
+                    timestamp: new Date().toISOString(),
+                    api_key_id: id,
+                    requester_ip: ip,
+                    error: errorMessage,
+                    insert_error: insertErr instanceof Error ? insertErr.message : String(insertErr)
+                }))
+            }
+        }
     }
 
     async listAll(): Promise<(ApiKey & { name?: string, last_used_ip?: string })[]> {

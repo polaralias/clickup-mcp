@@ -23,8 +23,19 @@ export const clickupSchema: ConfigSchema = {
         }
     ],
     validate: (config: any) => {
-        if (!config.apiKey || !config.apiKey.startsWith("pk_")) {
+        if (!config.apiKey || typeof config.apiKey !== "string") {
+            return { valid: false, error: "Invalid API Key format. Must be a string starting with 'pk_'" }
+        }
+        const apiKey = config.apiKey.trim()
+        if (!apiKey.startsWith("pk_")) {
             return { valid: false, error: "Invalid API Key format. Must start with 'pk_'" }
+        }
+        const keyBody = apiKey.slice(3)
+        if (keyBody.length < 20 || keyBody.length > 128) {
+            return { valid: false, error: "Invalid API Key format. Unexpected length." }
+        }
+        if (!/^[A-Za-z0-9]+$/.test(keyBody)) {
+            return { valid: false, error: "Invalid API Key format. Only letters and numbers are allowed after 'pk_'" }
         }
         return { valid: true }
     }

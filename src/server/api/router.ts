@@ -133,7 +133,7 @@ router.post("/auth/token", ensureServices, async (req, res) => {
     const codeVerifier = req.body.code_verifier || req.body.codeVerifier
 
     const accessToken = await authService.exchangeCode(code, redirectUri, codeVerifier)
-    res.json({ accessToken })
+    res.json({ access_token: accessToken })
   } catch (err) {
     res.status(400).json({ error: (err as Error).message })
   }

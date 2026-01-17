@@ -8,7 +8,7 @@ A Model Context Protocol (MCP) server for the ClickUp API, enabling AI agents to
 - **Task Management**: Create, read, update, and delete tasks.
 - **Time Tracking**: Log time entries and view reports.
 - **Selective Permissions**: Configure read-only access or whitelist specific Spaces/Lists.
-- **Secure Authentication**: Supports both OAuth-style Bearer tokens and simple API Key authentication (`x-api-key` header or `?apiKey=` query param).
+- **Secure Authentication**: Supports both OAuth-style Bearer tokens and simple API Key authentication (`x-api-key` header; `?apiKey=` query param is available for clients that cannot set headers, but is not recommended).
 - **Deployment Options**: Run locally via Docker or deploy to Cloudflare Workers.
 
 ## Quick Start (Local Docker)
@@ -88,7 +88,7 @@ The server securely encrypts your config and loads it automatically when you use
 ### 2. Simple Global API Key (Legacy)
 For simple single-user setups. Configured via `MCP_API_KEY`.
 - **Header**: `x-api-key: your-mcp-api-key`
-- **Query Param**: `?apiKey=your-mcp-api-key`
+- **Query Param**: `?apiKey=your-mcp-api-key` (compatibility-only for clients that cannot send headers; not recommended).
 
 > [!NOTE]
 > Global keys usually have restricted write access by default unless configured otherwise.

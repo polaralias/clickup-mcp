@@ -71,3 +71,14 @@ CREATE TABLE IF NOT EXISTS api_keys (
 
 CREATE INDEX IF NOT EXISTS idx_api_keys_key_hash ON api_keys(key_hash);
 CREATE INDEX IF NOT EXISTS idx_user_configs_server_id ON user_configs(server_id);
+
+CREATE TABLE IF NOT EXISTS api_key_usage_failures (
+  id UUID PRIMARY KEY,
+  api_key_id UUID REFERENCES api_keys(id) ON DELETE CASCADE,
+  failure_at TIMESTAMP DEFAULT NOW(),
+  last_used_ip TEXT,
+  error TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_api_key_usage_failures_api_key_id ON api_key_usage_failures(api_key_id);
+CREATE INDEX IF NOT EXISTS idx_api_key_usage_failures_failure_at ON api_key_usage_failures(failure_at);

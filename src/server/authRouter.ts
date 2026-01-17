@@ -1,4 +1,4 @@
-import { Router, json, urlencoded } from "express"
+import { Router, json, urlencoded, type CookieOptions } from "express"
 import { join, dirname } from "path"
 import { fileURLToPath } from "url"
 import { readFileSync } from "fs"
@@ -9,6 +9,18 @@ import { resolveTeamIdFromApiKey } from "./teamResolution.js"
 
 const router = Router()
 const __dirname = dirname(fileURLToPath(import.meta.url))
+
+function getSecureCookieOptions(): CookieOptions {
+    const isProduction = process.env.NODE_ENV === "production"
+    const isHttps = process.env.BASE_URL?.startsWith("https://") ?? false
+
+    return {
+        httpOnly: true,
+        sameSite: "strict",
+        secure: isProduction || isHttps,
+        maxAge: 10 * 60 * 1000
+    }
+}
 
 // Rate limiters
 const connectLimiter = rateLimit({
@@ -130,7 +142,7 @@ router.get("/connect", ensureServices, async (req, res) => {
     }
 
     const csrfToken = randomBytes(16).toString("hex")
-    res.cookie("csrf_token", csrfToken, { httpOnly: true, sameSite: "strict" })
+    res.cookie("csrf_token", csrfToken, getSecureCookieOptions())
 
     const htmlPath = join(__dirname, "../public/connect.html")
     let html = readFileSync(htmlPath, "utf-8")
