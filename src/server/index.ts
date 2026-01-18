@@ -50,6 +50,26 @@ import { requestLogger } from "./middleware/requestLogger.js"
 import { errorHandler } from "./middleware/errorHandler.js"
 import { getMetrics } from "../infrastructure/metrics/metrics.js"
 
+async function runMigrationsWithRetry() {
+  const maxAttempts = Number(process.env.DB_MIGRATION_RETRY ?? 10)
+  const delayMs = Number(process.env.DB_MIGRATION_DELAY_MS ?? 1000)
+  let lastError: unknown
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      await runMigrations()
+      return
+    } catch (err) {
+      lastError = err
+      if (attempt === maxAttempts) break
+      console.warn(`Database not ready, retrying migrations (${attempt}/${maxAttempts})...`)
+      await new Promise((resolve) => setTimeout(resolve, delayMs))
+    }
+  }
+
+  throw lastError
+}
+
 function validateSecurityConfig() {
   const masterKey = process.env.MASTER_KEY?.trim()
   if (!masterKey) {
@@ -77,7 +97,7 @@ function validateSecurityConfig() {
 async function start() {
   validateSecurityConfig()
   try {
-    await runMigrations()
+    await runMigrationsWithRetry()
     if (config.apiKeyMode === "user_bound") {
       // Validate configuration immediately
       // This will throw if MASTER_KEY is missing

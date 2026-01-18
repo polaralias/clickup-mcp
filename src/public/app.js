@@ -54,6 +54,7 @@ function renderConfigForm(schema) {
     const container = document.getElementById('config-fields-container');
     container.innerHTML = '';
     schema.fields.forEach(field => {
+        const fieldName = field.name || field.key;
         const wrapper = document.createElement('div');
         const label = document.createElement('label');
         label.className = 'block text-sm font-medium text-gray-700 mb-1';
@@ -69,12 +70,12 @@ function renderConfigForm(schema) {
                 option.innerText = opt.label;
                 input.appendChild(option);
             });
-        } else if (field.type === 'checkbox') {
+        } else if (field.type === 'checkbox' || field.type === 'boolean') {
             const checkboxWrapper = document.createElement('div');
             checkboxWrapper.className = 'flex items-center bg-gray-50 border border-gray-300 rounded-lg p-2';
             input = document.createElement('input');
             input.type = 'checkbox';
-            input.id = field.name;
+            input.id = fieldName;
             input.className = 'mr-2';
             const cbLabel = document.createElement('span');
             cbLabel.className = 'text-sm text-gray-700';
@@ -82,7 +83,7 @@ function renderConfigForm(schema) {
             checkboxWrapper.appendChild(input);
             checkboxWrapper.appendChild(cbLabel);
             wrapper.appendChild(checkboxWrapper);
-            input.name = field.name;
+            input.name = fieldName;
             if (field.required) input.required = true;
             container.appendChild(wrapper);
             return;
@@ -97,8 +98,8 @@ function renderConfigForm(schema) {
             input.className = 'w-full p-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500';
             input.placeholder = field.placeholder || '';
         }
-        input.name = field.name;
-        input.id = field.name;
+        input.name = fieldName;
+        input.id = fieldName;
         if (field.required) input.required = true;
         if (field.format) input.dataset.format = field.format;
         wrapper.appendChild(input);
