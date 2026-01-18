@@ -12,17 +12,17 @@ services:
       NODE_ENV: production
       PORT: "3000"
       TRANSPORT: "http"
-      MASTER_KEY: ${MASTER_KEY:?MASTER_KEY environment variable is required. Generate with: openssl rand -hex 32}
+      MASTER_KEY: "${CLICKUP_MASTER_KEY:?CLICKUP_MASTER_KEY environment variable is required. Generate with: openssl rand -hex 32}"
       # API_KEY_MODE: Set to "user_bound" to enable self-service API key provisioning
       # Default in code is "disabled" but we enable it here for the Docker demo
-      API_KEY_MODE: ${API_KEY_MODE:-user_bound}
-      REDIRECT_URI_ALLOWLIST: ${REDIRECT_URI_ALLOWLIST:-https://chatgpt.com/,https://chat.openai.com/,https://clickup-mcp.polaralias.com/,http://localhost:3000/callback,http://localhost:3011/callback}
-      REDIRECT_URI_ALLOWLIST_MODE: ${REDIRECT_URI_ALLOWLIST_MODE:-prefix}
-      CODE_TTL_SECONDS: ${CODE_TTL_SECONDS:-90}
-      TOKEN_TTL_SECONDS: ${TOKEN_TTL_SECONDS:-3600}
-      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-clickup_mcp}
+      API_KEY_MODE: ${CLICKUP_API_KEY_MODE:-user_bound}
+      REDIRECT_URI_ALLOWLIST: ${CLICKUP_REDIRECT_URI_ALLOWLIST:-https://chatgpt.com/,https://chat.openai.com/,https://clickup-mcp.polaralias.com/,http://localhost:3000/callback,http://localhost:3011/callback}
+      REDIRECT_URI_ALLOWLIST_MODE: ${CLICKUP_REDIRECT_URI_ALLOWLIST_MODE:-prefix}
+      CODE_TTL_SECONDS: ${CLICKUP_CODE_TTL_SECONDS:-90}
+      TOKEN_TTL_SECONDS: ${CLICKUP_TOKEN_TTL_SECONDS:-3600}
+      DATABASE_URL: postgres://${CLICKUP_POSTGRES_USER:-postgres}:${CLICKUP_POSTGRES_PASSWORD:-postgres}@db:5432/${CLICKUP_POSTGRES_DB:-clickup_mcp}
       # Legacy/Optional config if not using DB
-      TEAM_ID: ${TEAM_ID:-}
+      TEAM_ID: ${CLICKUP_TEAM_ID:-}
       CLICKUP_API_TOKEN: ${CLICKUP_API_TOKEN:-}
       CHAR_LIMIT: "16000"
       MAX_ATTACHMENT_MB: "8"
@@ -38,9 +38,9 @@ services:
   db:
     image: postgres:15-alpine
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      POSTGRES_DB: ${POSTGRES_DB:-clickup_mcp}
+      POSTGRES_USER: ${CLICKUP_POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${CLICKUP_POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${CLICKUP_POSTGRES_DB:-clickup_mcp}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
