@@ -1,4 +1,4 @@
-export type ConfigFieldType = "text" | "password" | "textarea" | "select" | "checkbox"
+export type ConfigFieldType = "text" | "password" | "textarea" | "select" | "checkbox" | "number"
 
 export interface ConfigFieldOptions {
     label: string
@@ -13,6 +13,7 @@ export interface ConfigField {
     description?: string
     placeholder?: string
     options?: ConfigFieldOptions[] // For select
+    format?: string
     secret?: boolean // If true, never return value to client after save
 }
 
