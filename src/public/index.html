@@ -4,65 +4,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Server Configuration</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .hidden {
-            display: none;
-        }
-    </style>
+    <title>ClickUp MCP | Setup</title>
+    <link rel="stylesheet" href="premium.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 
-<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
-    <div class="bg-white rounded-lg shadow-lg max-w-2xl w-full p-8">
-        <h1 class="text-2xl font-bold text-gray-800 mb-2">Server Configuration</h1>
-        <p class="text-gray-600 mb-6">Generate a user-bound API key by providing the required settings.</p>
-        <div id="config-status-banner" class="hidden mb-6 p-4 rounded-lg border">
-            <div class="flex items-start">
-                <span id="status-icon" class="mr-3 text-lg"></span>
+<body>
+    <div class="glass-card animate-fade-in">
+        <h1>ClickUp MCP</h1>
+        <p>Generate a user-bound API key to begin. This key allows any MCP client to access ClickUp through this server.
+        </p>
+
+        <div id="config-status-banner" class="hidden status-badge mb-6">
+            <span id="status-icon" class="mr-2"></span>
+            <span id="status-title"></span>
+        </div>
+
+        <div id="oauth-hint" class="hint-box">
+            <div style="display: flex; gap: 1rem;">
+                <span style="font-size: 1.5rem;">✨</span>
                 <div>
-                    <p id="status-title" class="font-semibold"></p>
-                    <p id="status-message" class="text-sm mt-1"></p>
-                    <p id="status-guidance" class="text-sm mt-2 text-gray-600"></p>
+                    <p style="color: white; font-weight: 600; margin-top: 0;">OAuth Support Detected</p>
+                    <p style="font-size: 0.875rem;">For enterprise-grade security, use the OAuth2 URL in your client:
+                    </p>
+                    <code id="oauth-url" style="display: block; margin-top: 0.5rem; color: #818cf8;"></code>
+                    <p id="fallback-message"
+                        style="font-size: 0.75rem; margin-top: 0.75rem; color: var(--text-muted); border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.5rem;">
+                        💡 <strong>Automatic detection failed?</strong> Manually configure your client's authorization
+                        endpoint to <code>{{BASE_URL}}/authorize</code>.
+                    </p>
                 </div>
             </div>
         </div>
-        <div id="oauth-hint" class="mb-6 p-4 rounded-lg border bg-blue-50 border-blue-200 text-blue-800">
-            <div class="flex items-start">
-                <span class="mr-3 text-lg">💡</span>
-                <div>
-                    <p class="font-semibold">OAuth Connection Available</p>
-                    <p class="text-sm mt-1">If your MCP client supports OAuth2, use the URL below for a better experience:</p>
-                    <code id="oauth-url" class="block mt-2 p-2 bg-white rounded border border-blue-100 text-xs font-mono"></code>
-                </div>
-            </div>
-        </div>
-        <div id="view-config-entry" class="hidden">
-            <form id="user-bound-form" class="space-y-6">
-                <div id="config-fields-container" class="space-y-4"></div>
-                <button id="issue-btn" type="submit"
-                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors">Issue
-                    API Key</button>
+
+        <div id="view-config-entry">
+            <form id="user-bound-form">
+                <div id="config-fields-container"></div>
+                <button id="issue-btn" type="submit">Initialize Server & Issue Key</button>
             </form>
         </div>
+
         <div id="api-key-result" class="hidden">
-            <div class="p-4 bg-green-50 border border-green-200 rounded-lg">
-                <div class="flex items-center justify-between">
-                    <p class="font-semibold text-green-800">API Key Issued</p>
+            <div class="result-box">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <p style="color: #10b981; font-weight: 700; margin: 0;">✓ API Key Generated</p>
                     <button id="copy-btn"
-                        class="text-sm bg-white border border-green-200 hover:bg-green-100 text-green-800 px-3 py-1 rounded-md">Copy</button>
+                        style="width: auto; margin: 0; padding: 0.4rem 0.8rem; font-size: 0.75rem; background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981;">Copy
+                        Key</button>
                 </div>
-                <p class="text-sm text-green-700 mt-2">Save this key now. You will not be able to view it again.</p>
-                <pre id="api-key-value"
-                    class="mt-3 p-3 bg-white border border-green-200 rounded-md text-sm overflow-x-auto"></pre>
-                <div class="mt-4 text-sm text-green-700">
-                    <p class="font-semibold">How to use:</p>
-                    <ul class="list-disc list-inside mt-1 space-y-1">
-                        <li>Header: <code>Authorization: Bearer &lt;key&gt;</code></li>
-                        <li>Header: <code>X-API-Key: &lt;key&gt;</code></li>
+                <p style="font-size: 0.75rem; margin-top: 0.5rem;">Save this key securely. It's the only time it will be
+                    shown.</p>
+                <pre id="api-key-value"></pre>
+
+                <div style="margin-top: 1.5rem;">
+                    <p style="font-weight: 600; font-size: 0.875rem; color: white;">How to Connect:</p>
+                    <p style="font-size: 0.875rem;">1. Add this server to your client using the root URL
+                        (<code>/</code>).
+                    </p>
+                    <p style="font-size: 0.875rem;">2. Provide the key using any of these methods:
+                    <ul
+                        style="font-size: 0.75rem; margin-top: 0.5rem; color: var(--text-muted); list-style-type: disc; padding-left: 1.25rem;">
+                        <li><strong>Headers:</strong> <code>X-API-Key</code>, <code>api-key</code>,
+                            <code>x-api-token</code>, or <code>Authorization: Key &lt;key&gt;</code></li>
+                        <li><strong>Query Parameters:</strong> <code>apiKey</code>, <code>api_key</code>,
+                            <code>key</code>, or <code>token</code></li>
                     </ul>
+                    </p>
                 </div>
-                <button onclick="resetConfigForm()" class="mt-4 text-sm text-gray-500 underline">Start Over</button>
+                <div style="text-align: center; margin-top: 1.5rem;">
+                    <button onclick="resetConfigForm()"
+                        style="background: transparent; color: var(--text-muted); font-size: 0.75rem; width: auto; text-decoration: underline;">Start
+                        Over</button>
+                </div>
             </div>
         </div>
     </div>

@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         };
 
         try {
-            const res = await fetch('/connect', {
+            const res = await fetch('/authorize', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -100,14 +100,18 @@ function renderFields(fields, container) {
     container.innerHTML = '';
     fields.forEach(field => {
         const wrapper = document.createElement('div');
+        wrapper.className = 'animate-fade-in';
         const label = document.createElement('label');
-        label.className = 'block text-sm font-medium text-gray-700 mb-1';
+        label.className = 'block text-sm font-medium text-slate-300 mb-2';
         label.innerText = field.label || field.name;
         wrapper.appendChild(label);
         let input;
+
+        const inputBaseClass = 'w-full p-3 border border-indigo-500/20 rounded-xl bg-slate-900/50 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all';
+
         if (field.type === 'select') {
             input = document.createElement('select');
-            input.className = 'w-full p-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500';
+            input.className = inputBaseClass;
             (field.options || []).forEach(opt => {
                 const option = document.createElement('option');
                 option.value = opt.value;
@@ -116,14 +120,14 @@ function renderFields(fields, container) {
             });
         } else if (field.type === 'checkbox') {
             const checkboxWrapper = document.createElement('div');
-            checkboxWrapper.className = 'flex items-center bg-gray-50 border border-gray-300 rounded-lg p-2';
+            checkboxWrapper.className = 'flex items-center bg-slate-900/30 border border-indigo-500/10 rounded-xl p-3';
             input = document.createElement('input');
             input.type = 'checkbox';
             input.id = field.name;
             input.name = field.name;
-            input.className = 'mr-2';
+            input.className = 'w-5 h-5 mr-3 rounded border-indigo-500/20 bg-slate-900 text-indigo-500 focus:ring-indigo-500/50';
             const cbLabel = document.createElement('span');
-            cbLabel.className = 'text-sm text-gray-700';
+            cbLabel.className = 'text-sm text-slate-300';
             cbLabel.innerText = field.description || '';
             checkboxWrapper.appendChild(input);
             checkboxWrapper.appendChild(cbLabel);
@@ -133,13 +137,13 @@ function renderFields(fields, container) {
             return;
         } else if (field.type === 'textarea') {
             input = document.createElement('textarea');
-            input.className = 'w-full p-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500';
+            input.className = inputBaseClass;
             input.rows = field.rows || 4;
             input.placeholder = field.placeholder || '';
         } else {
             input = document.createElement('input');
             input.type = field.type === 'password' ? 'password' : 'text';
-            input.className = 'w-full p-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500';
+            input.className = inputBaseClass;
             input.placeholder = field.placeholder || '';
         }
         input.id = field.name;
@@ -147,9 +151,9 @@ function renderFields(fields, container) {
         if (field.required) input.required = true;
         if (field.format) input.dataset.format = field.format;
         wrapper.appendChild(input);
-        if (field.description) {
+        if (field.description && field.type !== 'checkbox') {
             const hint = document.createElement('p');
-            hint.className = 'text-xs text-gray-500 mt-1';
+            hint.className = 'text-xs text-slate-500 mt-2 ml-1';
             hint.innerText = field.description;
             wrapper.appendChild(hint);
         }

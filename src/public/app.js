@@ -8,7 +8,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const baseUrl = window.location.origin;
     const oauthUrlEl = document.getElementById('oauth-url');
     if (oauthUrlEl) {
-        oauthUrlEl.innerText = `${baseUrl}/oauth`;
+        oauthUrlEl.innerText = baseUrl;
+    }
+
+    const fallbackMsg = document.getElementById('fallback-message');
+    if (fallbackMsg) {
+        fallbackMsg.innerHTML = fallbackMsg.innerHTML.replace('{{BASE_URL}}', baseUrl);
     }
 
     try {
@@ -26,34 +31,27 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function fetchConfigStatus() {
     const banner = document.getElementById('config-status-banner');
-    const icon = document.getElementById('status-icon');
     const title = document.getElementById('status-title');
-    const message = document.getElementById('status-message');
-    const guidance = document.getElementById('status-guidance');
     try {
         const res = await fetch(`${API_BASE}/config-status`);
         const data = await res.json();
         banner.classList.remove('hidden');
         if (data.status === 'present') {
-            banner.className = 'mb-6 p-4 rounded-lg border bg-green-50 border-green-200 text-green-800';
-            icon.innerText = '✅';
-            title.innerText = 'Server is configured';
-            message.innerText = `Encryption key is set (${data.format}).`;
-            guidance.innerText = '';
+            banner.style.background = 'rgba(16, 185, 129, 0.1)';
+            banner.style.border = '1px solid rgba(16, 185, 129, 0.2)';
+            banner.style.color = '#10b981';
+            title.innerText = '✓ Server Configured';
         } else {
-            banner.className = 'mb-6 p-4 rounded-lg border bg-red-50 border-red-200 text-red-800';
-            icon.innerText = '❌';
-            title.innerText = 'Server is not configured';
-            message.innerText = 'The required encryption key is missing. User-bound API keys cannot be issued.';
-            guidance.innerText = 'Set the server encryption key environment variable to enable secure storage and key issuance.';
+            banner.style.background = 'rgba(239, 68, 68, 0.1)';
+            banner.style.border = '1px solid rgba(239, 68, 68, 0.2)';
+            banner.style.color = '#ef4444';
+            title.innerText = '⚠ Server Not Configured';
         }
     } catch (e) {
         banner.classList.remove('hidden');
-        banner.className = 'mb-6 p-4 rounded-lg border bg-red-50 border-red-200 text-red-800';
-        icon.innerText = '❌';
-        title.innerText = 'Unable to check server status';
-        message.innerText = 'Could not reach /api/config-status. Is the server running?';
-        guidance.innerText = '';
+        banner.style.background = 'rgba(239, 68, 68, 0.1)';
+        banner.style.color = '#ef4444';
+        title.innerText = 'Unable to check status';
     }
 }
 
@@ -63,14 +61,17 @@ function renderConfigForm(schema) {
     schema.fields.forEach(field => {
         const fieldName = field.name || field.key;
         const wrapper = document.createElement('div');
+        wrapper.className = 'input-group animate-fade-in';
         const label = document.createElement('label');
-        label.className = 'block text-sm font-medium text-gray-700 mb-1';
         label.innerText = field.label;
         wrapper.appendChild(label);
         let input;
+
+        const inputBaseClass = 'w-full p-3 border border-indigo-500/20 rounded-xl bg-slate-900/50 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all';
+
         if (field.type === 'select') {
             input = document.createElement('select');
-            input.className = 'w-full p-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500';
+            input.className = inputBaseClass;
             (field.options || []).forEach(opt => {
                 const option = document.createElement('option');
                 option.value = opt.value;
@@ -79,13 +80,13 @@ function renderConfigForm(schema) {
             });
         } else if (field.type === 'checkbox' || field.type === 'boolean') {
             const checkboxWrapper = document.createElement('div');
-            checkboxWrapper.className = 'flex items-center bg-gray-50 border border-gray-300 rounded-lg p-2';
+            checkboxWrapper.className = 'flex items-center bg-slate-900/30 border border-indigo-500/10 rounded-xl p-3';
             input = document.createElement('input');
             input.type = 'checkbox';
             input.id = fieldName;
-            input.className = 'mr-2';
+            input.className = 'w-5 h-5 mr-3 rounded border-indigo-500/20 bg-slate-900 text-indigo-500 focus:ring-indigo-500/50';
             const cbLabel = document.createElement('span');
-            cbLabel.className = 'text-sm text-gray-700';
+            cbLabel.className = 'text-sm text-slate-300';
             cbLabel.innerText = field.description || '';
             checkboxWrapper.appendChild(input);
             checkboxWrapper.appendChild(cbLabel);
@@ -96,13 +97,13 @@ function renderConfigForm(schema) {
             return;
         } else if (field.type === 'textarea') {
             input = document.createElement('textarea');
-            input.className = 'w-full p-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500';
+            input.className = inputBaseClass;
             input.rows = field.rows || 4;
             input.placeholder = field.placeholder || '';
         } else {
             input = document.createElement('input');
             input.type = field.type === 'password' ? 'password' : 'text';
-            input.className = 'w-full p-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500';
+            input.className = inputBaseClass;
             input.placeholder = field.placeholder || '';
         }
         input.name = fieldName;
@@ -110,9 +111,9 @@ function renderConfigForm(schema) {
         if (field.required) input.required = true;
         if (field.format) input.dataset.format = field.format;
         wrapper.appendChild(input);
-        if (field.description) {
+        if (field.description && field.type !== 'checkbox') {
             const hint = document.createElement('p');
-            hint.className = 'text-xs text-gray-500 mt-1';
+            hint.className = 'text-xs text-slate-500 mt-2 ml-1';
             hint.innerText = field.description;
             wrapper.appendChild(hint);
         }

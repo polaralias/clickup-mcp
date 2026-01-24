@@ -55,91 +55,85 @@ export function authenticationMiddlewareVariant(allowedSource?: 'bearer' | 'apik
   }
 }
 
-export function authenticationMiddleware(req: Request, res: Response, next: NextFunction, allowedSource?: 'bearer' | 'apikey') {
-  // If in user_bound mode, delegate to apiKeyAuth
-  // But strictly, we might still want to support session continuation (mcp-session-id)
-  // Logic: 
-  // 1. Check Session ID (bypass)
-  // 2. If user_bound: apiKeyAuth
-  // 3. Else: Legacy logic
+function extractApiKey(req: Request) {
+  // Headers
+  const xApiKey = lastHeaderValue(req.headers["x-api-key"])
+  const apiKeyHeader = lastHeaderValue(req.headers["api-key"])
+  const xApiToken = lastHeaderValue(req.headers["x-api-token"])
+  const apiTokenHeader = lastHeaderValue(req.headers["api-token"])
 
+  // Authorization: Key <key>
+  const authHeader = lastHeaderValue(req.headers.authorization)
+  let authKey: string | undefined
+  if (authHeader) {
+    const match = /^Key\s+(.+)$/i.exec(authHeader)
+    authKey = match?.[1]?.trim()
+  }
+
+  // Query Params
+  const query = req.query as Record<string, unknown> | undefined
+  const qApiKey = lastQueryString(query?.apiKey)
+  const qApi_key = lastQueryString(query?.api_key)
+  const qKey = lastQueryString(query?.key)
+  const qApiToken = lastQueryString(query?.api_token)
+  const qToken = lastQueryString(query?.token)
+
+  return (xApiKey || apiKeyHeader || xApiToken || apiTokenHeader || authKey || qApiKey || qApi_key || qKey || qApiToken || qToken)?.trim()
+}
+
+export function authenticationMiddleware(req: Request, res: Response, next: NextFunction, allowedSource?: 'bearer' | 'apikey') {
   const sessionHeader = lastHeaderValue(req.headers["mcp-session-id"])
   if (sessionHeader) {
     next()
     return
   }
 
-  if (config.apiKeyMode === "user_bound") {
-    // If we only allow bearer (OAuth) and we are in user_bound mode,
-    // we should still allow OAuth if we have a session manager.
-    // However, user_bound mode usually means everything is an API key.
-    // But the requirements say /oauth should be for OAuth.
-    
-    // If allowedSource is 'bearer', we should SKIP apiKeyAuth and look for Bearer token.
-    if (allowedSource === 'apikey') {
-      // Proceed to apiKeyAuth
-    } else if (allowedSource === 'bearer') {
-      // Proceed to bearer check
-      const authHeader = lastHeaderValue(req.headers.authorization)
-      const bearerToken = extractBearerToken(authHeader)
-      if (bearerToken) {
-        req.sessionCredential = { token: bearerToken, source: 'bearer' }
-        next()
-        return
-      }
-      return unauthorizedJson(req, res, { error: "OAuth authentication required at this endpoint. Provide 'Authorization: Bearer <token>'." })
-    }
-    
-    // Default or 'apikey'
-    apiKeyAuth(req, res, (err) => {
-      if (err) return next(err)
-      req.sessionCredential = {
-        token: "user_bound_session",
-        source: 'apikey'
-      }
-      next()
-    }).catch(next)
-    return
-  }
-
   const authHeader = lastHeaderValue(req.headers.authorization)
   const bearerToken = extractBearerToken(authHeader)
+  const providedApiKey = extractApiKey(req)
 
-  // 1. Check for Bearer token
+  // 1. If explicit bearer required or provided
   if (bearerToken && (!allowedSource || allowedSource === 'bearer')) {
     req.sessionCredential = { token: bearerToken, source: 'bearer' }
     next()
     return
   }
 
-  // 3. Check for API Key
-  const apiKeyHeader = lastHeaderValue(req.headers["x-api-key"])
-  const apiKeyQuery = lastQueryString((req.query as Record<string, unknown> | undefined)?.apiKey)
-  const providedApiKey = (apiKeyHeader || apiKeyQuery)?.trim()
-
+  // 2. If explicit apikey required or provided
   if (providedApiKey && (!allowedSource || allowedSource === 'apikey')) {
     const configuredKey = process.env.MCP_API_KEY
     const configuredKeys = process.env.MCP_API_KEYS?.split(',').map(k => k.trim()).filter(Boolean) || []
     const allowedKeys = [configuredKey, ...configuredKeys].filter((k): k is string => !!k)
 
-    if (allowedKeys.length > 0) {
-      const isValid = allowedKeys.some(key => safeCompare(providedApiKey, key))
-      if (isValid) {
-        req.sessionCredential = { token: providedApiKey, source: 'apikey' }
-        next()
-        return
-      }
-      return unauthorizedJson(req, res, { error: "Invalid API key" })
+    const isValidGlobal = allowedKeys.length > 0 && allowedKeys.some(key => safeCompare(providedApiKey, key))
+    if (isValidGlobal) {
+      req.sessionCredential = { token: providedApiKey, source: 'apikey' }
+      next()
+      return
     }
 
-    return unauthorizedJson(req, res, { error: "API key authentication is not configured on this server" })
+    if (config.apiKeyMode === "user_bound") {
+      apiKeyAuth(req, res, (err: any) => {
+        if (err) return next(err)
+        req.sessionCredential = { token: providedApiKey, source: 'apikey' }
+        next()
+      }).catch(next)
+      return
+    }
+
+    return unauthorizedJson(req, res, { error: "Invalid API key" })
   }
 
-  const message = allowedSource === 'bearer' 
-    ? "OAuth authentication required. Provide 'Authorization: Bearer <token>' header."
-    : allowedSource === 'apikey' 
-    ? "API key authentication required. Provide 'x-api-key' header or 'apiKey' query parameter."
-    : "Authentication required. Provide 'Authorization: Bearer <token>' or 'x-api-key: <key>' header or 'apiKey' query parameter."
+  // 3. Handle Fallback/Failure
+  const apiKeyHint = "Headers: 'x-api-key', 'api-key', or 'Authorization: Key <key>'. Query: 'apiKey', 'api_key', or 'key'."
 
+  if (allowedSource === 'bearer') {
+    return unauthorizedJson(req, res, { error: "OAuth authentication required. Provide 'Authorization: Bearer <token>'." })
+  }
+  if (allowedSource === 'apikey') {
+    return unauthorizedJson(req, res, { error: `API key authentication required. Supported methods: ${apiKeyHint}` })
+  }
+
+  const message = `Authentication required. Provide 'Authorization: Bearer <token>', or an API Key. ${apiKeyHint}`
   return unauthorizedJson(req, res, { error: message })
 }

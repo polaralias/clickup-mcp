@@ -205,14 +205,14 @@ async function start() {
 
     app.get("/.well-known/oauth-protected-resource", (req, res) => {
       const getBaseUrlInternal = (req: express.Request) => {
-        if (process.env.PUBLIC_BASE_URL) return process.env.PUBLIC_BASE_URL.replace(/\/$/, "") // Priority
+        if (process.env.PUBLIC_BASE_URL) return process.env.PUBLIC_BASE_URL.replace(/\/$/, "")
         if (process.env.BASE_URL) return process.env.BASE_URL.replace(/\/$/, "")
         const proto = (req.headers["x-forwarded-proto"] as string) || req.protocol
         return `${proto}://${req.get("host")}`.replace(/\/+$/, "")
       }
       const baseUrl = getBaseUrlInternal(req)
       res.json({
-        resource: `${baseUrl}/oauth`,
+        resource: baseUrl,
         authorization_servers: [baseUrl],
         bearer_methods_supported: ["header"],
         resource_documentation: `${baseUrl}/`
@@ -226,7 +226,7 @@ async function start() {
     app.get("/.well-known/mcp-server", (req, res) => {
       const baseUrl = getBaseUrl(req)
       res.json({
-        mcp_endpoint: `${baseUrl}/mcp`,
+        mcp_endpoint: baseUrl,
         version: "1.0.0",
         capabilities: {
           authentication: ["api_key", "oauth2"],
@@ -239,7 +239,7 @@ async function start() {
       const baseUrl = getBaseUrl(req)
       res.json({
         issuer: baseUrl,
-        authorization_endpoint: `${baseUrl}/connect`,
+        authorization_endpoint: `${baseUrl}/authorize`,
         token_endpoint: `${baseUrl}/token`,
         registration_endpoint: `${baseUrl}/register`,
         response_types_supported: ["code"],

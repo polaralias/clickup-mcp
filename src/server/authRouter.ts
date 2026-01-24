@@ -24,7 +24,7 @@ function getSecureCookieOptions(): CookieOptions {
 
 // Rate limiters
 const connectLimiter = rateLimit({
-    windowMs: 60 * 1000, // 1 minute
+    windowMs: 60 * 1000,
     limit: 20,
     standardHeaders: true,
     legacyHeaders: false,
@@ -32,7 +32,7 @@ const connectLimiter = rateLimit({
 })
 
 const tokenLimiter = rateLimit({
-    windowMs: 60 * 1000, // 1 minute
+    windowMs: 60 * 1000,
     limit: 20,
     standardHeaders: true,
     legacyHeaders: false,
@@ -40,7 +40,7 @@ const tokenLimiter = rateLimit({
 })
 
 const registerLimiter = rateLimit({
-    windowMs: 60 * 1000, // 1 minute
+    windowMs: 60 * 1000,
     limit: 10,
     standardHeaders: true,
     legacyHeaders: false,
@@ -54,7 +54,7 @@ router.use(urlencoded({ extended: true }))
 // POST /register (RFC 7591)
 router.post("/register", registerLimiter, ensureServices, async (req, res) => {
     try {
-        const { redirect_uris, client_name, token_endpoint_auth_method, grant_types, response_types, scope } = req.body
+        const { redirect_uris, client_name, token_endpoint_auth_method } = req.body
 
         if (!redirect_uris || !Array.isArray(redirect_uris) || redirect_uris.length === 0) {
             return res.status(400).json({ error: "invalid_redirect_uri", error_description: "redirect_uris is required and must be a non-empty array" })
@@ -65,10 +65,9 @@ router.post("/register", registerLimiter, ensureServices, async (req, res) => {
             try {
                 const url = new URL(uri)
                 if (url.protocol !== "http:" && url.protocol !== "https:") {
-                    console.warn(`[OAuth Rejection] Invalid protocol: uri=${uri}, client_name=${client_name}, ip=${req.ip}, path=${req.path}`)
-                    return res.status(400).json({ error: "invalid_redirect_uri", error_description: "This client isn't in the redirect allow list - raise an issue on GitHub for it to be added" })
+                    return res.status(400).json({ error: "invalid_redirect_uri", error_description: "Only http and https protocols are allowed" })
                 }
-                // Enforce allowlist if configured
+
                 const allowlist = (process.env.REDIRECT_URI_ALLOWLIST || "").split(",").map(s => s.trim()).filter(s => s.length > 0)
                 if (allowlist.length > 0) {
                     const mode = process.env.REDIRECT_URI_ALLOWLIST_MODE === "prefix" ? "prefix" : "exact"
@@ -79,13 +78,14 @@ router.post("/register", registerLimiter, ensureServices, async (req, res) => {
                         allowed = allowlist.some(allowedUri => uri.startsWith(allowedUri))
                     }
                     if (!allowed) {
-                        console.warn(`[OAuth Rejection] Redirect URI not in allowlist: uri=${uri}, client_name=${client_name}, ip=${req.ip}, path=${req.path}`)
-                        return res.status(400).json({ error: "invalid_redirect_uri", error_description: "This client isn't in the redirect allow list - raise an issue on GitHub for it to be added" })
+                        return res.status(400).json({
+                            error: "invalid_redirect_uri",
+                            error_description: `The redirect URI "${uri}" is not in the allowlist. Please raise a GitHub issue at https://github.com/polaralias/clickup-mcp to have it added.`
+                        })
                     }
                 }
             } catch {
-                console.warn(`[OAuth Rejection] Invalid URI format: uri=${uri}, client_name=${client_name}, ip=${req.ip}, path=${req.path}`)
-                return res.status(400).json({ error: "invalid_redirect_uri", error_description: "This client isn't in the redirect allow list - raise an issue on GitHub for it to be added" })
+                return res.status(400).json({ error: "invalid_redirect_uri", error_description: "Invalid URI format" })
             }
         }
 
@@ -111,8 +111,8 @@ router.post("/register", registerLimiter, ensureServices, async (req, res) => {
     }
 })
 
-// GET /connect
-router.get("/connect", ensureServices, async (req, res) => {
+// GET /authorize
+router.get("/authorize", ensureServices, async (req, res) => {
     const { client_id, redirect_uri, state, code_challenge, code_challenge_method } = req.query
 
     if (!client_id || typeof client_id !== "string") {
@@ -128,10 +128,11 @@ router.get("/connect", ensureServices, async (req, res) => {
         return res.status(400).send("Invalid or missing redirect_uri")
     }
 
-    // Validate redirect_uri against registered client
     if (!client.redirectUris.includes(redirect_uri)) {
-        console.warn(`[OAuth Rejection] Redirect URI not registered for client: uri=${redirect_uri}, client_id=${client_id}, ip=${req.ip}, path=${req.path}`)
-        return res.status(400).json({ error: "invalid_redirect_uri", error_description: "This client isn't in the redirect allow list - raise an issue on GitHub for it to be added" })
+        return res.status(400).json({
+            error: "invalid_redirect_uri",
+            error_description: `The redirect URI "${redirect_uri}" is not registered for this client. Please raise a GitHub issue at https://github.com/polaralias/clickup-mcp to have it added.`
+        })
     }
 
     if (!code_challenge || !code_challenge_method) {
@@ -144,15 +145,23 @@ router.get("/connect", ensureServices, async (req, res) => {
     const csrfToken = randomBytes(16).toString("hex")
     res.cookie("csrf_token", csrfToken, getSecureCookieOptions())
 
-    const htmlPath = join(__dirname, "../public/connect.html")
-    let html = readFileSync(htmlPath, "utf-8")
-    html = html.replace("{{CSRF_TOKEN}}", csrfToken)
-
-    res.send(html)
+    const htmlPath = join(__dirname, "../public/authorize.html")
+    // Fallback if authorize.html doesn't exist yet, we'll create it next
+    try {
+        let html = readFileSync(htmlPath, "utf-8")
+        html = html.replace("{{CSRF_TOKEN}}", csrfToken)
+        res.send(html)
+    } catch {
+        // Fallback to connect.html if authorize.html is missing
+        const fallbackPath = join(__dirname, "../public/connect.html")
+        let html = readFileSync(fallbackPath, "utf-8")
+        html = html.replace("{{CSRF_TOKEN}}", csrfToken)
+        res.send(html)
+    }
 })
 
-// POST /connect
-router.post("/connect", connectLimiter, ensureServices, async (req, res) => {
+// POST /authorize
+router.post("/authorize", connectLimiter, ensureServices, async (req, res) => {
     try {
         const { client_id, name, config, redirect_uri, state, code_challenge, code_challenge_method, csrf_token } = req.body
 
@@ -164,7 +173,6 @@ router.post("/connect", connectLimiter, ensureServices, async (req, res) => {
             return res.status(403).json({ error: "Invalid CSRF token" })
         }
 
-        // Validate inputs
         if (!name || !config || !config.apiKey) {
             return res.status(400).json({ error: "Missing required fields" })
         }
@@ -179,11 +187,12 @@ router.post("/connect", connectLimiter, ensureServices, async (req, res) => {
         }
 
         if (!redirect_uri || !client.redirectUris.includes(redirect_uri)) {
-            console.warn(`[OAuth Rejection] Invalid or unregistered redirect URI: uri=${redirect_uri}, client_id=${client_id}, name=${name}, ip=${req.ip}, path=${req.path}`)
-            return res.status(400).json({ error: "invalid_redirect_uri", error_description: "This client isn't in the redirect allow list - raise an issue on GitHub for it to be added" })
+            return res.status(400).json({
+                error: "invalid_redirect_uri",
+                error_description: `The redirect URI "${redirect_uri}" is not allowed. Please raise a GitHub issue at https://github.com/polaralias/clickup-mcp to have it added.`
+            })
         }
 
-        // Resolve Team ID if missing
         if (!config.teamId) {
             try {
                 config.teamId = await resolveTeamIdFromApiKey(config.apiKey)
@@ -192,19 +201,14 @@ router.post("/connect", connectLimiter, ensureServices, async (req, res) => {
             }
         }
 
-        // Create Connection
         const connection = await connectionManager.create({ name, config })
-
-        // Create Auth Code
         const code = await authService.generateCode(connection.id, redirect_uri, code_challenge, code_challenge_method, client_id)
 
-        // Construct Redirect URL
         const url = new URL(redirect_uri)
         url.searchParams.set("code", code)
         if (state) url.searchParams.set("state", state)
 
         res.json({ redirectUrl: url.toString() })
-
     } catch (err) {
         res.status(500).json({ error: (err as Error).message })
     }
@@ -216,7 +220,7 @@ router.post("/token", tokenLimiter, ensureServices, async (req, res) => {
         const { grant_type, code, redirect_uri, code_verifier, client_id } = req.body
 
         if (grant_type !== "authorization_code") {
-            // Optional check
+            return res.status(400).json({ error: "unsupported_grant_type" })
         }
 
         if (!code || !code_verifier || !client_id) {
@@ -229,8 +233,6 @@ router.post("/token", tokenLimiter, ensureServices, async (req, res) => {
         }
 
         const accessToken = await authService.exchangeCode(code, redirect_uri, code_verifier, client_id)
-
-        // Determine expires_in
         const ttl = parseInt(process.env.TOKEN_TTL_SECONDS || "3600", 10)
 
         res.json({

@@ -1,5 +1,7 @@
-import { randomUUID } from "node:crypto"
-import type { Express, Request, Response } from "express"
+import { randomUUID } from "crypto"
+import { join, dirname } from "path"
+import { fileURLToPath } from "url"
+import type { Express, Request, Response, NextFunction } from "express"
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js"
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 import type { ApplicationConfig, SessionConfigInput } from "../application/config/applicationConfig.js"
@@ -52,11 +54,11 @@ export function registerHttpTransport(
     let session: Session
     const transport = new StreamableHTTPServerTransport({
       sessionIdGenerator: () => forcedSessionId || randomUUID(),
-      onsessioninitialized: (sessionId) => {
+      onsessioninitialized: (sessionId: string) => {
         session.sessionId = sessionId
         sessions.set(sessionId, session)
       },
-      onsessionclosed: (sessionId) => {
+      onsessionclosed: (sessionId: string) => {
         if (session.sessionId === sessionId) {
           sessions.delete(sessionId)
         }
@@ -188,21 +190,51 @@ export function registerHttpTransport(
   }
 
   // Define authentication variants
-  const apiKeyAuth = authenticationMiddlewareVariant('apikey')
+  const defaultAuth = authenticationMiddlewareVariant()
   const oauthAuth = authenticationMiddlewareVariant('bearer')
 
-  // Mount endpoints
-  app.all("/mcp", apiKeyAuth, mcpHandler)
-  app.all("/oauth", oauthAuth, mcpHandler)
-
-  // Also handle root for clients that only have the base URL
-  // We only intercept if it looks like an SSE request (Accept header includes text/event-stream)
-  // or if it's a POST request (which index.html doesn't handle)
-  app.all("/", (req, res, next) => {
+  // Primary endpoint: The base URL itself handles everything automatically
+  app.all("/", (req: Request, res: Response, next: NextFunction) => {
     const accept = req.headers.accept || ""
-    if (accept.includes("text/event-stream") || req.method === "POST") {
-      return apiKeyAuth(req, res, () => mcpHandler(req, res))
+
+    // 1. Browser context? Serve Setup UI via static/authRouter
+    if (req.method === "GET" && accept.includes("text/html")) {
+      return next()
     }
+
+    // 2. MCP context? Handle POST or SSE GET
+    if (req.method === "POST" || accept.includes("text/event-stream")) {
+      return defaultAuth(req, res, () => mcpHandler(req, res))
+    }
+
     next()
   })
+
+  // Fallback endpoint: /authorize handles UI flow and acts as an MCP fallback
+  // Distinguish between MCP protocol and OAuth connection logic
+  app.all("/authorize", (req: Request, res: Response, next: NextFunction) => {
+    const accept = req.headers.accept || ""
+    const isMcp = req.body?.jsonrpc === "2.0" || accept.includes("text/event-stream")
+
+    // If it's a browser request for the UI
+    if (req.method === "GET" && accept.includes("text/html") && !isMcp) {
+      const __dirname = dirname(fileURLToPath(import.meta.url))
+      const authorizePath = join(__dirname, "../public/authorize.html")
+      const fallbackPath = join(__dirname, "../public/connect.html")
+      return res.sendFile(authorizePath, (err: any) => {
+        if (err) res.sendFile(fallbackPath)
+      })
+    }
+
+    // If it's an MCP protocol request hitting the fallback endpoint
+    if (isMcp) {
+      return oauthAuth(req, res, () => mcpHandler(req, res))
+    }
+
+    // Otherwise (e.g. Connection creation POST), let authRouter handle it
+    next()
+  })
+
+  // Legacy/Alias endpoints for compatibility
+  app.all(["/mcp", "/oauth"], defaultAuth, (req: Request, res: Response) => mcpHandler(req, res))
 }
