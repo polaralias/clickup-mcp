@@ -204,15 +204,15 @@ async function start() {
     }
 
     app.get("/.well-known/oauth-protected-resource", (req, res) => {
-      const getBaseUrl = (req: express.Request) => {
+      const getBaseUrlInternal = (req: express.Request) => {
         if (process.env.PUBLIC_BASE_URL) return process.env.PUBLIC_BASE_URL.replace(/\/$/, "") // Priority
         if (process.env.BASE_URL) return process.env.BASE_URL.replace(/\/$/, "")
         const proto = (req.headers["x-forwarded-proto"] as string) || req.protocol
         return `${proto}://${req.get("host")}`.replace(/\/+$/, "")
       }
-      const baseUrl = getBaseUrl(req)
+      const baseUrl = getBaseUrlInternal(req)
       res.json({
-        resource: `${baseUrl}/mcp`,
+        resource: `${baseUrl}/oauth`,
         authorization_servers: [baseUrl],
         bearer_methods_supported: ["header"],
         resource_documentation: `${baseUrl}/`

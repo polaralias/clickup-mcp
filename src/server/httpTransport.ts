@@ -5,7 +5,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 import type { ApplicationConfig, SessionConfigInput } from "../application/config/applicationConfig.js"
 import { createApplicationConfig } from "../application/config/applicationConfig.js"
 import { extractSessionConfig } from "./sessionConfig.js"
-import { authenticationMiddleware, type SessionCredential } from "./authentication.js"
+import { authenticationMiddleware, authenticationMiddlewareVariant, type SessionCredential } from "./authentication.js"
 import { SessionCache } from "../application/services/SessionCache.js"
 import { sessionManager } from "./api/router.js"
 import { PostgresSessionCache } from "../infrastructure/services/PostgresSessionCache.js"
@@ -187,7 +187,13 @@ export function registerHttpTransport(
     }
   }
 
-  app.all("/mcp", authenticationMiddleware, mcpHandler)
+  // Define authentication variants
+  const apiKeyAuth = authenticationMiddlewareVariant('apikey')
+  const oauthAuth = authenticationMiddlewareVariant('bearer')
+
+  // Mount endpoints
+  app.all("/mcp", apiKeyAuth, mcpHandler)
+  app.all("/oauth", oauthAuth, mcpHandler)
 
   // Also handle root for clients that only have the base URL
   // We only intercept if it looks like an SSE request (Accept header includes text/event-stream)
@@ -195,7 +201,7 @@ export function registerHttpTransport(
   app.all("/", (req, res, next) => {
     const accept = req.headers.accept || ""
     if (accept.includes("text/event-stream") || req.method === "POST") {
-      return authenticationMiddleware(req, res, () => mcpHandler(req, res))
+      return apiKeyAuth(req, res, () => mcpHandler(req, res))
     }
     next()
   })
