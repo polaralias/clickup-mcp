@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClickUp MCP | Authorize</title>
+    <link rel="stylesheet" href="premium.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="glass-card animate-fade-in">
+        <h1>Authorize Connection</h1>
+        <p>Complete the setup to allow your MCP client to securely interact with ClickUp.</p>
+
+        <div id="error-msg" class="hidden"
+            style="color: #ef4444; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); padding: 1rem; border-radius: 0.75rem; font-size: 0.875rem; margin-bottom: 1.5rem;">
+        </div>
+
+        <form id="connect-form" class="space-y-6">
+            <input type="hidden" id="client_id" name="client_id">
+            <input type="hidden" id="redirect_uri" name="redirect_uri">
+            <input type="hidden" id="state" name="state">
+            <input type="hidden" id="code_challenge" name="code_challenge">
+            <input type="hidden" id="code_challenge_method" name="code_challenge_method">
+            <input type="hidden" id="csrf_token" name="csrf_token" value="{{CSRF_TOKEN}}">
+
+            <div class="input-group">
+                <label for="name">Connection Name</label>
+                <input id="name" name="name" type="text" required placeholder="e.g. My ClickUp Workspace">
+            </div>
+
+            <div class="input-group">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <label style="margin-bottom: 0;">Configuration</label>
+                    <span id="schema-status" style="font-size: 0.75rem; color: var(--text-muted);"></span>
+                </div>
+                <div id="connection-fields-container" style="display: flex; flex-direction: column; gap: 1rem;"></div>
+            </div>
+
+            <button id="submit-btn" type="submit">Establish Secure Connection</button>
+        </form>
+    </div>
+    <script src="connect.js"></script>
+</body>
+
+</html>

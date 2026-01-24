@@ -241,13 +241,13 @@ export function registerTools(server: McpServer, config: ApplicationConfig, sess
     previousOnClose?.()
   }
 
-  function registerClientTool(name: string, options: RegistrationOptions) {
+  function registerClientTool(name: string, options: RegistrationOptions & { _internalMeta?: Record<string, any> }) {
     const jsonSchema = zodToJsonSchemaCompact(options.schema)
     const rawShape = toRawShape(options.schema)
     const entry: ToolCatalogueEntry = {
       name,
       description: options.description,
-      annotations: options.annotations,
+      annotations: { ...options.annotations, ...options._internalMeta },
       inputSchema: jsonSchema
     }
     entries.push({ entry, requiresDocs: options.requiresDocs })
@@ -258,8 +258,8 @@ export function registerTools(server: McpServer, config: ApplicationConfig, sess
         {
           description,
           ...(rawShape ? { inputSchema: rawShape } : {}),
-          annotations: options.annotations,
-          _meta: meta ?? options.meta
+          annotations: options.annotations as any,
+          _meta: meta ?? options.meta ?? options._internalMeta
         },
         async (rawInput: unknown) => {
           const client = createClient()
@@ -300,7 +300,7 @@ export function registerTools(server: McpServer, config: ApplicationConfig, sess
     entry: {
       name: "ping",
       description: "Echo request for connectivity checks.",
-      annotations: pingAnnotation.annotations,
+      annotations: { ...pingAnnotation.annotations, ...pingAnnotation._internalMeta },
       inputSchema: pingJsonSchema
     }
   })
@@ -309,7 +309,8 @@ export function registerTools(server: McpServer, config: ApplicationConfig, sess
     {
       description: "Echo request for connectivity checks.",
       ...(pingShape ? { inputSchema: pingShape } : {}),
-      ...pingAnnotation
+      annotations: pingAnnotation.annotations,
+      _meta: pingAnnotation._internalMeta
     },
     async (rawInput: unknown) => {
       const parsed = PingInput.parse(rawInput ?? {})
@@ -324,7 +325,7 @@ export function registerTools(server: McpServer, config: ApplicationConfig, sess
     entry: {
       name: "health",
       description: "Report server readiness and enforced safety limits.",
-      annotations: healthAnnotation.annotations,
+      annotations: { ...healthAnnotation.annotations, ...healthAnnotation._internalMeta },
       inputSchema: healthJsonSchema
     }
   })
@@ -333,7 +334,8 @@ export function registerTools(server: McpServer, config: ApplicationConfig, sess
     {
       description: "Report server readiness and enforced safety limits.",
       ...(healthShape ? { inputSchema: healthShape } : {}),
-      ...healthAnnotation
+      annotations: healthAnnotation.annotations,
+      _meta: healthAnnotation._internalMeta
     },
     async (rawInput: unknown) => {
       const _parsed = HealthInput.parse(rawInput ?? {})
@@ -349,7 +351,7 @@ export function registerTools(server: McpServer, config: ApplicationConfig, sess
     entry: {
       name: "tool_catalogue",
       description: "Enumerate all available tools with their annotations.",
-      annotations: catalogueAnnotation.annotations,
+      annotations: { ...catalogueAnnotation.annotations, ...catalogueAnnotation._internalMeta },
       inputSchema: catalogueJsonSchema
     }
   })
@@ -358,7 +360,8 @@ export function registerTools(server: McpServer, config: ApplicationConfig, sess
     {
       description: "Enumerate all available tools with their annotations.",
       ...(catalogueShape ? { inputSchema: catalogueShape } : {}),
-      ...catalogueAnnotation
+      annotations: catalogueAnnotation.annotations,
+      _meta: catalogueAnnotation._internalMeta
     },
     async (rawInput: unknown) => {
       const _parsed = ToolCatalogueInput.parse(rawInput ?? {})
@@ -405,7 +408,7 @@ export function registerTools(server: McpServer, config: ApplicationConfig, sess
       entry: {
         name,
         description,
-        annotations: annotation.annotations,
+        annotations: { ...annotation.annotations, ...annotation._internalMeta },
         inputSchema: jsonSchema
       },
       requiresDocs: availability?.requiresDocs
@@ -416,8 +419,8 @@ export function registerTools(server: McpServer, config: ApplicationConfig, sess
         {
           description: descriptionText,
           ...(rawShape ? { inputSchema: rawShape } : {}),
-          ...annotation,
-          _meta: metaOverrides ?? meta
+          annotations: annotation.annotations,
+          _meta: metaOverrides ?? meta ?? annotation._internalMeta
         },
         withSafetyConfirmation(async (rawInput: unknown) => {
           const client = createClient()
@@ -445,6 +448,7 @@ export function registerTools(server: McpServer, config: ApplicationConfig, sess
       description,
       schema,
       annotations: annotation.annotations,
+      _internalMeta: annotation._internalMeta,
       handler,
       requiresDocs: availability?.requiresDocs,
       meta

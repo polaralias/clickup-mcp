@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Connection</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-lg max-w-lg w-full p-8">
+        <h1 class="text-2xl font-bold text-gray-800 mb-2">Create Connection</h1>
+        <p class="text-gray-600 mb-6">Enter connection details to create a new connection.</p>
+        <div id="error-msg" class="hidden text-sm text-red-600 mb-4"></div>
+        <form id="connect-form" class="space-y-6">
+            <input type="hidden" id="client_id" name="client_id">
+            <input type="hidden" id="redirect_uri" name="redirect_uri">
+            <input type="hidden" id="state" name="state">
+            <input type="hidden" id="code_challenge" name="code_challenge">
+            <input type="hidden" id="code_challenge_method" name="code_challenge_method">
+            <input type="hidden" id="csrf_token" name="csrf_token" value="{{CSRF_TOKEN}}">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Connection Name</label>
+                <input id="name" name="name" type="text" required
+                    class="w-full p-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="My connection">
+            </div>
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <p class="text-sm font-medium text-gray-700">Connection details</p>
+                    <span id="schema-status" class="text-xs text-gray-500"></span>
+                </div>
+                <div id="connection-fields-container" class="space-y-4"></div>
+            </div>
+            <button id="submit-btn" type="submit"
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors">Create
+                connection</button>
+        </form>
+    </div>
+    <script src="connect.js"></script>
+</body>
+
+</html>

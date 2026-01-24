@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClickUp MCP | Setup</title>
+    <link rel="stylesheet" href="premium.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="glass-card animate-fade-in">
+        <h1>ClickUp MCP</h1>
+        <p>Generate a user-bound API key to begin. This key allows any MCP client to access ClickUp through this server.
+        </p>
+
+        <div id="config-status-banner" class="hidden status-badge mb-6">
+            <span id="status-icon" class="mr-2"></span>
+            <span id="status-title"></span>
+        </div>
+
+        <div id="oauth-hint" class="hint-box">
+            <div style="display: flex; gap: 1rem;">
+                <span style="font-size: 1.5rem;">✨</span>
+                <div>
+                    <p style="color: white; font-weight: 600; margin-top: 0;">OAuth Support Detected</p>
+                    <p style="font-size: 0.875rem;">For enterprise-grade security, use the OAuth2 URL in your client:
+                    </p>
+                    <code id="oauth-url" style="display: block; margin-top: 0.5rem; color: #818cf8;"></code>
+                    <p id="fallback-message"
+                        style="font-size: 0.75rem; margin-top: 0.75rem; color: var(--text-muted); border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.5rem;">
+                        💡 <strong>Automatic detection failed?</strong> Manually configure your client's authorization
+                        endpoint to <code>{{BASE_URL}}/authorize</code>.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-config-entry">
+            <form id="user-bound-form">
+                <div id="config-fields-container"></div>
+                <button id="issue-btn" type="submit">Initialize Server & Issue Key</button>
+            </form>
+        </div>
+
+        <div id="api-key-result" class="hidden">
+            <div class="result-box">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <p style="color: #10b981; font-weight: 700; margin: 0;">✓ API Key Generated</p>
+                    <button id="copy-btn"
+                        style="width: auto; margin: 0; padding: 0.4rem 0.8rem; font-size: 0.75rem; background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981;">Copy
+                        Key</button>
+                </div>
+                <p style="font-size: 0.75rem; margin-top: 0.5rem;">Save this key securely. It's the only time it will be
+                    shown.</p>
+                <pre id="api-key-value"></pre>
+
+                <div style="margin-top: 1.5rem;">
+                    <p style="font-weight: 600; font-size: 0.875rem; color: white;">How to Connect:</p>
+                    <p style="font-size: 0.875rem;">1. Add this server to your client using the root URL
+                        (<code>/</code>).
+                    </p>
+                    <p style="font-size: 0.875rem;">2. Provide the key using any of these methods:
+                    <ul
+                        style="font-size: 0.75rem; margin-top: 0.5rem; color: var(--text-muted); list-style-type: disc; padding-left: 1.25rem;">
+                        <li><strong>Headers:</strong> <code>X-API-Key</code>, <code>api-key</code>,
+                            <code>x-api-token</code>, or <code>Authorization: Key &lt;key&gt;</code></li>
+                        <li><strong>Query Parameters:</strong> <code>apiKey</code>, <code>api_key</code>,
+                            <code>key</code>, or <code>token</code></li>
+                    </ul>
+                    </p>
+                </div>
+                <div style="text-align: center; margin-top: 1.5rem;">
+                    <button onclick="resetConfigForm()"
+                        style="background: transparent; color: var(--text-muted); font-size: 0.75rem; width: auto; text-decoration: underline;">Start
+                        Over</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+
+</html>
