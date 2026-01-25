@@ -100,14 +100,14 @@ function renderFields(fields, container) {
     container.innerHTML = '';
     fields.forEach(field => {
         const wrapper = document.createElement('div');
-        wrapper.className = 'animate-fade-in';
+        wrapper.className = 'input-group animate-fade-in';
         const label = document.createElement('label');
-        label.className = 'block text-sm font-medium text-slate-300 mb-2';
+        label.className = 'label-text';
         label.innerText = field.label || field.name;
         wrapper.appendChild(label);
         let input;
 
-        const inputBaseClass = 'w-full p-3 border border-indigo-500/20 rounded-xl bg-slate-900/50 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all';
+        const inputBaseClass = 'input-field';
 
         if (field.type === 'select') {
             input = document.createElement('select');
@@ -120,14 +120,14 @@ function renderFields(fields, container) {
             });
         } else if (field.type === 'checkbox') {
             const checkboxWrapper = document.createElement('div');
-            checkboxWrapper.className = 'flex items-center bg-slate-900/30 border border-indigo-500/10 rounded-xl p-3';
+            checkboxWrapper.className = 'flex items-center bg-white/5 border border-white/10 rounded-2xl p-4 transition-all hover:bg-white/10';
             input = document.createElement('input');
             input.type = 'checkbox';
             input.id = field.name;
             input.name = field.name;
-            input.className = 'w-5 h-5 mr-3 rounded border-indigo-500/20 bg-slate-900 text-indigo-500 focus:ring-indigo-500/50';
+            input.className = 'w-5 h-5 mr-4 rounded border-white/20 bg-black/40 text-blue-500 focus:ring-blue-500/50';
             const cbLabel = document.createElement('span');
-            cbLabel.className = 'text-sm text-slate-300';
+            cbLabel.className = 'text-sm text-blue-100/70';
             cbLabel.innerText = field.description || '';
             checkboxWrapper.appendChild(input);
             checkboxWrapper.appendChild(cbLabel);
@@ -153,7 +153,7 @@ function renderFields(fields, container) {
         wrapper.appendChild(input);
         if (field.description && field.type !== 'checkbox') {
             const hint = document.createElement('p');
-            hint.className = 'text-xs text-slate-500 mt-2 ml-1';
+            hint.className = 'text-[10px] text-blue-200/30 mt-2 ml-2 uppercase tracking-widest font-bold';
             hint.innerText = field.description;
             wrapper.appendChild(hint);
         }

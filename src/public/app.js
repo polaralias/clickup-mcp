@@ -11,6 +11,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         oauthUrlEl.innerText = baseUrl;
     }
 
+    const oauthHint = document.getElementById('oauth-hint');
+    if (oauthHint) {
+        oauthHint.classList.remove('hidden');
+    }
+
     const fallbackMsg = document.getElementById('fallback-message');
     if (fallbackMsg) {
         fallbackMsg.innerHTML = fallbackMsg.innerHTML.replace('{{BASE_URL}}', baseUrl);
@@ -37,20 +42,20 @@ async function fetchConfigStatus() {
         const data = await res.json();
         banner.classList.remove('hidden');
         if (data.status === 'present') {
-            banner.style.background = 'rgba(16, 185, 129, 0.1)';
-            banner.style.border = '1px solid rgba(16, 185, 129, 0.2)';
-            banner.style.color = '#10b981';
+            banner.style.background = 'rgba(52, 168, 83, 0.1)';
+            banner.style.border = '1px solid rgba(52, 168, 83, 0.2)';
+            banner.style.color = '#34a853';
             title.innerText = '✓ Server Configured';
         } else {
-            banner.style.background = 'rgba(239, 68, 68, 0.1)';
-            banner.style.border = '1px solid rgba(239, 68, 68, 0.2)';
-            banner.style.color = '#ef4444';
+            banner.style.background = 'rgba(234, 67, 53, 0.1)';
+            banner.style.border = '1px solid rgba(234, 67, 53, 0.2)';
+            banner.style.color = '#ea4335';
             title.innerText = '⚠ Server Not Configured';
         }
     } catch (e) {
         banner.classList.remove('hidden');
-        banner.style.background = 'rgba(239, 68, 68, 0.1)';
-        banner.style.color = '#ef4444';
+        banner.style.background = 'rgba(234, 67, 53, 0.1)';
+        banner.style.color = '#ea4335';
         title.innerText = 'Unable to check status';
     }
 }
@@ -63,11 +68,12 @@ function renderConfigForm(schema) {
         const wrapper = document.createElement('div');
         wrapper.className = 'input-group animate-fade-in';
         const label = document.createElement('label');
+        label.className = 'label-text';
         label.innerText = field.label;
         wrapper.appendChild(label);
         let input;
 
-        const inputBaseClass = 'w-full p-3 border border-indigo-500/20 rounded-xl bg-slate-900/50 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all';
+        const inputBaseClass = 'input-field';
 
         if (field.type === 'select') {
             input = document.createElement('select');
@@ -80,13 +86,13 @@ function renderConfigForm(schema) {
             });
         } else if (field.type === 'checkbox' || field.type === 'boolean') {
             const checkboxWrapper = document.createElement('div');
-            checkboxWrapper.className = 'flex items-center bg-slate-900/30 border border-indigo-500/10 rounded-xl p-3';
+            checkboxWrapper.className = 'flex items-center bg-white/5 border border-white/10 rounded-2xl p-4 transition-all hover:bg-white/10';
             input = document.createElement('input');
             input.type = 'checkbox';
             input.id = fieldName;
-            input.className = 'w-5 h-5 mr-3 rounded border-indigo-500/20 bg-slate-900 text-indigo-500 focus:ring-indigo-500/50';
+            input.className = 'w-5 h-5 mr-4 rounded border-white/20 bg-black/40 text-blue-500 focus:ring-blue-500/50';
             const cbLabel = document.createElement('span');
-            cbLabel.className = 'text-sm text-slate-300';
+            cbLabel.className = 'text-sm text-blue-100/70';
             cbLabel.innerText = field.description || '';
             checkboxWrapper.appendChild(input);
             checkboxWrapper.appendChild(cbLabel);
@@ -113,7 +119,7 @@ function renderConfigForm(schema) {
         wrapper.appendChild(input);
         if (field.description && field.type !== 'checkbox') {
             const hint = document.createElement('p');
-            hint.className = 'text-xs text-slate-500 mt-2 ml-1';
+            hint.className = 'text-[10px] text-blue-200/30 mt-2 ml-2 uppercase tracking-widest font-bold';
             hint.innerText = field.description;
             wrapper.appendChild(hint);
         }

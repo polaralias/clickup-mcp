@@ -4,44 +4,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Connection</title>
+    <title>ClickUp MCP | Create Connection</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@400;700;800;900&display=swap"
+        rel="stylesheet">
+    <!-- Tailwind CSS for layout -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .hidden {
-            display: none;
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        outfit: ['Outfit', 'sans-serif'],
+                    },
+                }
+            }
         }
-    </style>
+    </script>
+    <link rel="stylesheet" href="premium.css">
 </head>
 
-<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
-    <div class="bg-white rounded-lg shadow-lg max-w-lg w-full p-8">
-        <h1 class="text-2xl font-bold text-gray-800 mb-2">Create Connection</h1>
-        <p class="text-gray-600 mb-6">Enter connection details to create a new connection.</p>
-        <div id="error-msg" class="hidden text-sm text-red-600 mb-4"></div>
-        <form id="connect-form" class="space-y-6">
-            <input type="hidden" id="client_id" name="client_id">
-            <input type="hidden" id="redirect_uri" name="redirect_uri">
-            <input type="hidden" id="state" name="state">
-            <input type="hidden" id="code_challenge" name="code_challenge">
-            <input type="hidden" id="code_challenge_method" name="code_challenge_method">
-            <input type="hidden" id="csrf_token" name="csrf_token" value="{{CSRF_TOKEN}}">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Connection Name</label>
-                <input id="name" name="name" type="text" required
-                    class="w-full p-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="My connection">
+<body class="flex items-center justify-center p-4">
+    <!-- Ambient Background Blobs -->
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+
+    <div class="max-w-xl w-full animate-fade-in">
+        <!-- Header -->
+        <header class="text-center mb-10">
+            <h1 class="text-4xl font-extrabold text-white tracking-tight font-outfit">
+                Create Connection <span class="mcp-gradient">MCP</span>
+            </h1>
+            <p class="text-blue-200/60 mt-3 text-lg font-medium tracking-wide">
+                Initialize Secure Access
+            </p>
+        </header>
+
+        <!-- Main Content Card -->
+        <main class="glass rounded-[2.5rem] p-10 shadow-2xl">
+            <div id="error-msg" class="hidden status-badge mb-6"
+                style="background: rgba(234, 67, 53, 0.1); border: 1px solid rgba(234, 67, 53, 0.2); color: #ea4335;">
             </div>
-            <div class="space-y-4">
-                <div class="flex items-center justify-between">
-                    <p class="text-sm font-medium text-gray-700">Connection details</p>
-                    <span id="schema-status" class="text-xs text-gray-500"></span>
+
+            <form id="connect-form" class="space-y-8">
+                <input type="hidden" id="client_id" name="client_id">
+                <input type="hidden" id="redirect_uri" name="redirect_uri">
+                <input type="hidden" id="state" name="state">
+                <input type="hidden" id="code_challenge" name="code_challenge">
+                <input type="hidden" id="code_challenge_method" name="code_challenge_method">
+                <input type="hidden" id="csrf_token" name="csrf_token" value="{{CSRF_TOKEN}}">
+
+                <div class="input-group">
+                    <label for="name" class="label-text">Connection Name</label>
+                    <input id="name" name="name" type="text" class="input-field" required placeholder="My connection">
                 </div>
-                <div id="connection-fields-container" class="space-y-4"></div>
-            </div>
-            <button id="submit-btn" type="submit"
-                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors">Create
-                connection</button>
-        </form>
+
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-xl font-bold text-white font-outfit">Configuration</h2>
+                        <span id="schema-status"
+                            class="text-[10px] uppercase tracking-widest font-black text-blue-300/30"></span>
+                    </div>
+                    <div id="connection-fields-container" class="space-y-6">
+                        <!-- Dynamic Fields -->
+                    </div>
+                </div>
+
+                <button id="submit-btn" type="submit" class="btn-primary mt-8">
+                    Create Connection
+                </button>
+            </form>
+        </main>
+
+        <!-- Footer -->
+        <footer class="mt-12 text-center">
+            <p class="text-[10px] font-black text-blue-100/20 uppercase tracking-[0.5em]">
+                &copy; 2026 Model Context Protocol
+            </p>
+        </footer>
     </div>
     <script src="connect.js"></script>
 </body>

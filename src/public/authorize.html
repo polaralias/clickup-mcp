@@ -5,42 +5,88 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ClickUp MCP | Authorize</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@400;700;800;900&display=swap"
+        rel="stylesheet">
+    <!-- Tailwind CSS for layout -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        outfit: ['Outfit', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
     <link rel="stylesheet" href="premium.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 
-<body>
-    <div class="glass-card animate-fade-in">
-        <h1>Authorize Connection</h1>
-        <p>Complete the setup to allow your MCP client to securely interact with ClickUp.</p>
+<body class="flex items-center justify-center p-4">
+    <!-- Ambient Background Blobs -->
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
 
-        <div id="error-msg" class="hidden"
-            style="color: #ef4444; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); padding: 1rem; border-radius: 0.75rem; font-size: 0.875rem; margin-bottom: 1.5rem;">
-        </div>
+    <div class="max-w-xl w-full animate-fade-in">
+        <!-- Header -->
+        <header class="text-center mb-10">
+            <h1 class="text-4xl font-extrabold text-white tracking-tight font-outfit">
+                Authorize Connection <span class="mcp-gradient">MCP</span>
+            </h1>
+            <p class="text-blue-200/60 mt-3 text-lg font-medium tracking-wide">
+                Secure Client Access Control
+            </p>
+        </header>
 
-        <form id="connect-form" class="space-y-6">
-            <input type="hidden" id="client_id" name="client_id">
-            <input type="hidden" id="redirect_uri" name="redirect_uri">
-            <input type="hidden" id="state" name="state">
-            <input type="hidden" id="code_challenge" name="code_challenge">
-            <input type="hidden" id="code_challenge_method" name="code_challenge_method">
-            <input type="hidden" id="csrf_token" name="csrf_token" value="{{CSRF_TOKEN}}">
-
-            <div class="input-group">
-                <label for="name">Connection Name</label>
-                <input id="name" name="name" type="text" required placeholder="e.g. My ClickUp Workspace">
+        <!-- Main Content Card -->
+        <main class="glass rounded-[2.5rem] p-10 shadow-2xl">
+            <div id="error-msg" class="hidden status-badge mb-6"
+                style="background: rgba(234, 67, 53, 0.1); border: 1px solid rgba(234, 67, 53, 0.2); color: #ea4335;">
             </div>
 
-            <div class="input-group">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                    <label style="margin-bottom: 0;">Configuration</label>
-                    <span id="schema-status" style="font-size: 0.75rem; color: var(--text-muted);"></span>
+            <form id="connect-form" class="space-y-8">
+                <input type="hidden" id="client_id" name="client_id">
+                <input type="hidden" id="redirect_uri" name="redirect_uri">
+                <input type="hidden" id="state" name="state">
+                <input type="hidden" id="code_challenge" name="code_challenge">
+                <input type="hidden" id="code_challenge_method" name="code_challenge_method">
+                <input type="hidden" id="csrf_token" name="csrf_token" value="{{CSRF_TOKEN}}">
+
+                <div class="input-group">
+                    <label for="name" class="label-text">Connection Name</label>
+                    <input id="name" name="name" type="text" class="input-field" required
+                        placeholder="e.g. My ClickUp Workspace">
                 </div>
-                <div id="connection-fields-container" style="display: flex; flex-direction: column; gap: 1rem;"></div>
-            </div>
 
-            <button id="submit-btn" type="submit">Establish Secure Connection</button>
-        </form>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-xl font-bold text-white font-outfit">Configuration</h2>
+                        <span id="schema-status"
+                            class="text-[10px] uppercase tracking-widest font-black text-blue-300/30"></span>
+                    </div>
+                    <div id="connection-fields-container" class="space-y-6">
+                        <!-- Dynamic Fields -->
+                    </div>
+                </div>
+
+                <button id="submit-btn" type="submit" class="btn-primary mt-8">
+                    Establish Secure Connection
+                </button>
+            </form>
+        </main>
+
+        <!-- Footer -->
+        <footer class="mt-12 text-center">
+            <p class="text-[10px] font-black text-blue-100/20 uppercase tracking-[0.5em]">
+                &copy; 2026 Model Context Protocol
+            </p>
+        </footer>
     </div>
     <script src="connect.js"></script>
 </body>
