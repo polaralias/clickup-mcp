@@ -1,0 +1,17 @@
+node_modules
+npm-debug.log
+dist
+.env
+.env*
+.git
+.gitignore
+Dockerfile
+docker-compose.yml
+README.md
+AGENTS.md
+docs
+repro*.ts
+test-server.ts
+scripts/smoke-test.ps1
+scripts/dcr-smoke-test.ps1
+
