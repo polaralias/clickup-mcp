@@ -6,6 +6,15 @@ const { Pool } = pg
 let reconnectAttempts = 0
 const MAX_RECONNECT_ATTEMPTS = 5
 
+
+if (!process.env.DATABASE_URL) {
+  logger.error("DATABASE_URL environment variable is not defined. The application cannot connect to the database.")
+  logger.error("If running in Docker, ensure you are passing environment variables or using a .env file that is properly mounted/loaded.")
+  logger.error("Note: .env files are excluded from the Docker image by default for security.")
+  // We throw here to prevent the 'role root does not exist' confusion later
+  throw new Error("DATABASE_URL environment variable is required.")
+}
+
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   max: 20,

@@ -29,7 +29,11 @@ export const config = {
             limit: Number(process.env.MCP_RATELIMIT_PER_KEY ?? 60),
             windowMs: Number(process.env.MCP_RATELIMIT_WINDOW_SECONDS ?? 60) * 1000,
         }
-    }
+    },
+
+    // Proxy settings
+    // Default to '1' (trust first proxy), or set to 'true' to trust all, or specify IPs
+    trustProxy: process.env.TRUST_PROXY ?? "1"
 }
 
 // Validation helper

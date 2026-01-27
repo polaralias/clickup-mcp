@@ -17,7 +17,8 @@ const activeSchema = clickupSchema
 const issuanceLimiter = rateLimit({
     windowMs: config.rateLimits.apiKeyIssue.windowMs,
     max: config.rateLimits.apiKeyIssue.limit,
-    message: "Too many API keys issued from this IP, please try again later."
+    message: "Too many API keys issued from this IP, please try again later.",
+    validate: { trustProxy: false }
 })
 
 // GET /api/config-schema

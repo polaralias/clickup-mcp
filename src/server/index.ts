@@ -123,7 +123,17 @@ async function start() {
   const transport = process.env.TRANSPORT ?? "http"
   if (transport === "http") {
     const app = express()
-    app.set("trust proxy", true)
+    // Configure trust proxy based on configuration
+    const trustProxyValue = config.trustProxy
+    if (trustProxyValue === "true") {
+      app.set("trust proxy", true)
+    } else if (trustProxyValue === "false") {
+      app.set("trust proxy", false)
+    } else if (!isNaN(Number(trustProxyValue))) {
+      app.set("trust proxy", Number(trustProxyValue))
+    } else {
+      app.set("trust proxy", trustProxyValue)
+    }
     app.use((req, res, next) => {
       const forwardedProto = req.headers["x-forwarded-proto"]
       const isHttps =

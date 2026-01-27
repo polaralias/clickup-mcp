@@ -28,7 +28,8 @@ const connectLimiter = rateLimit({
     limit: 20,
     standardHeaders: true,
     legacyHeaders: false,
-    message: "Too many connection requests, please try again later."
+    message: "Too many connection requests, please try again later.",
+    validate: { trustProxy: false }
 })
 
 const tokenLimiter = rateLimit({
@@ -36,7 +37,8 @@ const tokenLimiter = rateLimit({
     limit: 20,
     standardHeaders: true,
     legacyHeaders: false,
-    message: "Too many token requests, please try again later."
+    message: "Too many token requests, please try again later.",
+    validate: { trustProxy: false }
 })
 
 const registerLimiter = rateLimit({
@@ -44,7 +46,8 @@ const registerLimiter = rateLimit({
     limit: 10,
     standardHeaders: true,
     legacyHeaders: false,
-    message: "Too many registration requests, please try again later."
+    message: "Too many registration requests, please try again later.",
+    validate: { trustProxy: false }
 })
 
 // Middleware for parsing body
