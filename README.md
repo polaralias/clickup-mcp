@@ -9,6 +9,11 @@ Standalone Python/FastMCP server for ClickUp with direct HTTP transport, static 
 - Supports `CLICKUP_MCP_API_KEY`, `MCP_API_KEY`, or `MCP_API_KEYS`
 - Preserves existing ClickUp write controls such as `WRITE_MODE`, `WRITE_ALLOWED_SPACES`, and `WRITE_ALLOWED_LISTS`
 
+## Reference Docs
+
+- [Tool reference](docs/tool-reference.md) contains the full public tool inventory and parameter schemas (79 tools).
+- [Configuration reference](docs/configuration.md) explains the supported env vars, auth modes, ports, storage, and deployment knobs.
+
 ## Configuration
 
 1. Copy `.env.example` to `.env`
