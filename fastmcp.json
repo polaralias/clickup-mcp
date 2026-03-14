@@ -1,0 +1,50 @@
+{
+  "$schema": "https://gofastmcp.com/public/schemas/fastmcp.json/v1.json",
+  "source": {
+    "type": "filesystem",
+    "path": "server.py",
+    "entrypoint": "mcp"
+  },
+  "environment": {
+    "type": "uv",
+    "python": ">=3.11",
+    "project": "."
+  },
+  "deployment": {
+    "transport": "streamable-http",
+    "host": "127.0.0.1",
+    "port": 3004,
+    "path": "/mcp",
+    "log_level": "INFO",
+    "env": {
+      "CLICKUP_API_TOKEN": "${CLICKUP_API_TOKEN}",
+      "CLICKUP_TEAM_ID": "${CLICKUP_TEAM_ID}",
+      "TEAM_ID": "${TEAM_ID}",
+      "API_KEY_MODE": "${API_KEY_MODE}",
+      "CLICKUP_MCP_API_KEY": "${CLICKUP_MCP_API_KEY}",
+      "MCP_API_KEY": "${MCP_API_KEY}",
+      "MCP_API_KEYS": "${MCP_API_KEYS}",
+      "CLICKUP_HTTP_TIMEOUT_MS": "30000",
+      "CHAR_LIMIT": "16000",
+      "MAX_ATTACHMENT_MB": "8",
+      "WRITE_MODE": "${WRITE_MODE}",
+      "READ_ONLY_MODE": "${READ_ONLY_MODE}",
+      "SELECTIVE_WRITE": "${SELECTIVE_WRITE}",
+      "WRITE_ALLOWED_SPACES": "${WRITE_ALLOWED_SPACES}",
+      "WRITE_ALLOWED_LISTS": "${WRITE_ALLOWED_LISTS}",
+      "HIERARCHY_CACHE_TTL_MS": "${HIERARCHY_CACHE_TTL_MS}",
+      "HIERARCHY_CACHE_TTL_SECONDS": "${HIERARCHY_CACHE_TTL_SECONDS}",
+      "SPACE_CONFIG_CACHE_TTL_MS": "${SPACE_CONFIG_CACHE_TTL_MS}",
+      "SPACE_CONFIG_CACHE_TTL_SECONDS": "${SPACE_CONFIG_CACHE_TTL_SECONDS}",
+      "REPORTING_MAX_TASKS": "200",
+      "DEFAULT_RISK_WINDOW_DAYS": "5",
+      "MCP_TRANSPORT": "streamable-http",
+      "MCP_HOST": "127.0.0.1",
+      "MCP_PORT": "3004",
+      "MCP_PATH": "/mcp",
+      "FASTMCP_TRANSPORT": "streamable-http",
+      "HOST": "127.0.0.1",
+      "PORT": "3004"
+    }
+  }
+}

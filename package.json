@@ -1,0 +1,14 @@
+{
+  "name": "clickup-mcp",
+  "private": true,
+  "description": "Docker and local runtime helpers for clickup-mcp",
+  "scripts": {
+    "docker:down": "docker compose down --remove-orphans",
+    "docker:logs": "docker compose logs -f",
+    "docker:ps": "docker compose ps",
+    "docker:up": "docker compose up -d --build --remove-orphans",
+    "mcp:doctor": "python scripts/run_server.py doctor",
+    "mcp:serve": "python scripts/run_server.py serve",
+    "mcp:url": "python scripts/run_server.py url"
+  }
+}

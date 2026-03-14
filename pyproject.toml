@@ -1,0 +1,17 @@
+[project]
+name = "clickup-mcp"
+version = "0.1.0"
+description = "Native MCP server for ClickUp"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "fastmcp>=3.1.0",
+  "requests>=2.32.0"
+]
+
+[project.scripts]
+clickup-mcp = "server:main"
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
