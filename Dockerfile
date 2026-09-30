@@ -15,8 +15,9 @@ RUN apt-get update \
 
 WORKDIR /app
 
-COPY pyproject.toml uv.lock README.md fastmcp.json server.py ./
+COPY pyproject.toml uv.lock README.md fastmcp.json server.py mcp_oauth.py ./
 COPY tool_manifest_clickup.json ./
+COPY clickup_mcp_data ./clickup_mcp_data
 COPY scripts/run_server.py ./scripts/run_server.py
 
 RUN uv sync --no-dev

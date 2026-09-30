@@ -12,6 +12,9 @@ services:
       MCP_HOST: 0.0.0.0
       MCP_PORT: "${CLICKUP_MCP_PORT:-3004}"
       MCP_PATH: "${CLICKUP_MCP_PATH:-/mcp}"
+      FASTMCP_HOME: /app/state/fastmcp
+    volumes:
+      - ./state/fastmcp:/app/state/fastmcp
     ports:
       - "${CLICKUP_MCP_HOST_PORT:-3004}:${CLICKUP_MCP_PORT:-3004}"
     healthcheck:

@@ -11,6 +11,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
+  "httpx>=0.28,<1",
   "pytest>=8.4.0"
 ]
 
@@ -20,3 +21,10 @@ clickup-mcp = "server:main"
 [build-system]
 requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["clickup_mcp_data"]
+py-modules = ["server", "mcp_oauth"]
+
+[tool.setuptools.package-data]
+clickup_mcp_data = ["*.json"]
