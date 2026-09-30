@@ -16,6 +16,7 @@ from typing import Any, Callable, Iterable
 import requests
 from fastmcp import FastMCP
 from fastmcp.server.auth import AccessToken, TokenVerifier
+from mcp_oauth import select_mcp_auth
 from fastmcp.tools import FunctionTool
 from starlette.responses import JSONResponse
 
@@ -494,9 +495,13 @@ def _repo_root() -> Path:
 
 def _load_manifest() -> list[dict[str, Any]]:
     path = _repo_root() / "tool_manifest_clickup.json"
-    if not path.exists():
-        raise FileNotFoundError(f"Missing tool manifest: {path}")
-    data = json.loads(path.read_text(encoding="utf-8"))
+    if path.exists():
+        manifest_text = path.read_text(encoding="utf-8")
+    else:
+        from importlib.resources import files
+
+        manifest_text = files("clickup_mcp_data").joinpath("tool_manifest_clickup.json").read_text(encoding="utf-8")
+    data = json.loads(manifest_text)
     tools = data.get("tools")
     if not isinstance(tools, list):
         raise RuntimeError("tool_manifest_clickup.json is invalid")
@@ -2363,7 +2368,7 @@ runtime_config = _resolve_runtime_config()
 client = ClickUpClient(_clickup_token(), timeout_ms=int(_runtime_env("CLICKUP_HTTP_TIMEOUT_MS", default="30000") or "30000"))
 runtime = ClickUpRuntime(client, manifest, runtime_config)
 api_keys = _load_api_keys()
-auth = StaticApiKeyVerifier(api_keys=api_keys, base_url=_runtime_env("BASE_URL")) if api_keys else None
+auth = select_mcp_auth("clickup-mcp", StaticApiKeyVerifier, api_keys, _runtime_env("BASE_URL"))
 server = FastMCP("clickup-mcp", auth=auth)
 mcp = server
 _register_tools(server, runtime, manifest)

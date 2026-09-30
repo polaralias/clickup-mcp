@@ -88,3 +88,7 @@ For repository workflow and agent-focussed context, read [AGENTS.md](AGENTS.md).
 ## Repository knowledge
 
 - [Documentation map](docs/knowledge/documentation-map.md) — RKE-managed reading order and relationship hub.
+
+## MCP client OAuth
+
+See [MCP client OAuth](docs/mcp-oauth.md) for Google sign-in, migration, and validation.
